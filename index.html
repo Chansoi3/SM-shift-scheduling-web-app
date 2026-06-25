@@ -277,9 +277,118 @@ table.schedule th.day-event{box-shadow:inset 0 -3px 0 #e8590c}
 .empty-state{text-align:center;padding:40px 20px;color:#9e9e9e}
 .empty-state .empty-icon{font-size:40px;margin-bottom:8px}
 .empty-state p{font-size:12px}
+
+/* ══════════ Mode select splash ══════════ */
+#mode-select{position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,#1a237e,#3949ab);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:24px;color:#fff}
+#mode-select .ms-logo{text-align:center}
+#mode-select .ms-logo .ms-emoji{font-size:46px}
+#mode-select .ms-logo h1{font-size:23px;font-weight:800;letter-spacing:.3px;margin-top:6px}
+#mode-select .ms-logo p{font-size:13px;color:rgba(255,255,255,.7);margin-top:6px}
+.ms-cards{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;max-width:560px}
+.ms-card{background:#fff;color:#1a237e;border-radius:18px;width:230px;max-width:82vw;padding:26px 22px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;box-shadow:0 8px 28px rgba(0,0,0,.25);border:3px solid transparent}
+.ms-card:hover{transform:translateY(-4px);box-shadow:0 14px 36px rgba(0,0,0,.32);border-color:#90caf9}
+.ms-card:active{transform:translateY(0)}
+.ms-card .ms-ico{font-size:54px;line-height:1;margin-bottom:14px}
+.ms-card .ms-title{font-size:18px;font-weight:800}
+.ms-card .ms-desc{font-size:12px;color:#7986cb;margin-top:7px;line-height:1.55}
+.ms-foot{font-size:11px;color:rgba(255,255,255,.55)}
+
+/* ══════════ Mobile shell ══════════ */
+#mobile-app{display:none;flex-direction:column;height:100vh;background:#eef1f7}
+body.mode-mobile .app{display:none}
+body.mode-mobile #mobile-app{display:flex}
+body.mode-mobile #save-bar{display:none!important}
+body.mode-desktop #mobile-app{display:none}
+.m-top{background:#1a237e;color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.m-top h2{font-size:15px;font-weight:700;flex:1}
+.m-switch{background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:8px;padding:7px 11px;font-size:11px;font-weight:600}
+.m-switch:active{background:rgba(255,255,255,.28)}
+.m-content{flex:1;overflow-y:auto;padding:12px;padding-bottom:92px;-webkit-overflow-scrolling:touch}
+.m-filter{background:#fff;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:11px;box-shadow:0 1px 3px rgba(26,35,126,.08);margin-bottom:12px}
+.m-filter label{font-size:11px;font-weight:700;color:#7986cb;margin-bottom:4px;display:block}
+.m-filter select,.m-filter input{width:100%;padding:11px;font-size:15px;border:1.5px solid #dde0ee;border-radius:9px;background:#f8f9ff;color:#1a1a2e}
+.m-btn{width:100%;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;background:#1a237e;color:#fff}
+.m-btn:active{background:#283593}
+.m-info{background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12px;line-height:1.7}
+.m-info b{color:#ffd54f}
+.m-info .mi-name{font-size:15px;font-weight:800;margin-bottom:3px}
+.mcard{background:#fff;border-radius:12px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(26,35,126,.08);border:1px solid #e7eaf6}
+.mcard.mcard-sm{border-color:#9fa8da;background:#f7f9ff}
+.mcard-head{display:flex;align-items:center;gap:10px;padding:11px 12px}
+.mcard-no{width:30px;height:30px;border-radius:50%;background:#e8eaf6;color:#3949ab;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mcard-sm .mcard-no{background:#3949ab;color:#fff}
+.mcard-title{flex:1;min-width:0}
+.mcard-title .m-name{width:100%;border:1px solid transparent;background:transparent;font-size:15px;font-weight:700;color:#1a1a2e;padding:4px 2px;border-radius:6px}
+.mcard-title .m-name:focus{border-color:#5c6bc0;background:#f8f9ff;outline:none}
+.mcard-sub{font-size:10px;color:#9e9e9e;margin-top:2px;padding-left:2px}
+.mcard-chevron{font-size:16px;color:#9fa8da;transition:transform .2s;flex-shrink:0;padding:0 4px}
+.mcard.open .mcard-chevron{transform:rotate(180deg)}
+.mcard-body{border-top:1px solid #eef0fa;padding:12px;display:none}
+.mcard.open .mcard-body{display:block}
+.m-empfields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.m-empfields .mf{display:flex;flex-direction:column;gap:3px}
+.m-empfields label{font-size:10px;color:#7986cb;font-weight:700}
+.m-empfields input{padding:9px;border:1.5px solid #dde0ee;border-radius:8px;font-size:14px;background:#f8f9ff;width:100%;color:#1a1a2e}
+.mday{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4fa}
+.mday:last-child{border-bottom:none}
+.mday-date{width:60px;flex-shrink:0;font-size:13px;font-weight:700;color:#3949ab}
+.mday-date span{font-size:11px;font-weight:400;color:#9e9e9e;margin-left:3px}
+.mday.mday-hol{background:#fff7f7;margin:0 -12px;padding-left:12px;padding-right:12px}
+.mday.mday-hol .mday-date{color:#c62828}
+.mcell-wrap{flex:1;display:flex;gap:6px;align-items:center;justify-content:flex-end}
+body.mode-mobile .shift-cell{min-width:98px;padding:10px 8px;font-size:12px;border-radius:9px}
+body.mode-mobile .shift-cell.empty{font-size:18px}
+body.mode-mobile .ot-cell{min-width:80px;padding:9px 6px;font-size:11px;border-radius:9px}
+.m-del{width:100%;margin-top:14px;padding:11px;border:1.5px solid #ffcdd2;background:#fff5f5;color:#c62828;border-radius:9px;font-weight:700;font-size:13px}
+.m-save{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;display:none;padding:15px;border:none;border-radius:12px;background:#2e7d32;color:#fff;font-size:16px;font-weight:800;box-shadow:0 6px 20px rgba(46,125,50,.4);align-items:center;justify-content:center;gap:8px}
+body.mode-mobile .m-save.visible{display:flex}
+.m-empty{text-align:center;padding:50px 20px;color:#9e9e9e}
+.m-empty .e-ico{font-size:46px;margin-bottom:10px}
+@media(max-width:440px){.picker-modal{width:calc(100vw - 20px)!important}.ot-modal{width:calc(100vw - 20px)!important}}
 </style>
 </head>
 <body>
+
+<!-- ═══════ MODE SELECT (เลือกโหมดก่อนเข้าใช้งาน) ═══════ -->
+<div id="mode-select">
+  <div class="ms-logo">
+    <div class="ms-emoji">📅</div>
+    <h1>ระบบตารางรอบ SM</h1>
+    <p>เลือกโหมดการใช้งานให้เหมาะกับอุปกรณ์ของคุณ</p>
+  </div>
+  <div class="ms-cards">
+    <div class="ms-card" onclick="chooseMode('desktop')">
+      <div class="ms-ico">🖥️</div>
+      <div class="ms-title">โหมดเดสก์ท็อป</div>
+      <div class="ms-desc">ตารางเต็มทั้งเดือน เห็นทุกวันพร้อมกัน เหมาะกับคอมพิวเตอร์ / จอใหญ่ และงาน Admin</div>
+    </div>
+    <div class="ms-card" onclick="chooseMode('mobile')">
+      <div class="ms-ico">📱</div>
+      <div class="ms-title">โหมดมือถือ</div>
+      <div class="ms-desc">กรอกกะทีละคน แตะง่าย ปุ่มใหญ่ เลื่อนสะดวก เหมาะกับโทรศัพท์</div>
+    </div>
+  </div>
+  <div class="ms-foot">สลับโหมดได้ตลอดเวลาภายในแอป</div>
+</div>
+
+<!-- ═══════ MOBILE APP (โหมดมือถือ) ═══════ -->
+<div id="mobile-app">
+  <div class="m-top">
+    <h2>📅 ตารางรอบ SM</h2>
+    <button class="m-switch" onclick="switchMode('desktop')">🖥️ เดสก์ท็อป</button>
+  </div>
+  <div class="m-content">
+    <div class="m-filter">
+      <div><label>รหัสเขต (AM)</label><select id="m-am" onchange="onMAMChange()"><option value="">-- เลือก --</option></select></div>
+      <div><label>รหัสสาขา</label><select id="m-branch"><option value="">-- เลือกสาขา --</option></select></div>
+      <div><label>เดือน / ปี</label><input type="month" id="m-month"></div>
+      <button class="m-btn" onclick="loadMobile()">🔍 โหลดตาราง</button>
+    </div>
+    <div id="m-info" class="m-info" style="display:none"></div>
+    <div id="m-list"><div class="m-empty"><div class="e-ico">📅</div><p>เลือกสาขาและเดือน แล้วกด "โหลดตาราง"</p></div></div>
+  </div>
+  <button class="m-save" id="m-save" onclick="saveNow()"><span>💾 บันทึกตาราง</span></button>
+</div>
 
 <div class="app">
   <!-- Sidebar -->
@@ -611,7 +720,7 @@ table.schedule th.day-event{box-shadow:inset 0 -3px 0 #e8590c}
 // ══════════ STATE ══════════
 const state = {
   amCode:'', branchCode:'', year:0, month:0,
-  data:null, pending:{}, pendingNames:{}, requiredHours:9, autoTimer:null
+  data:null, pending:{}, pendingNames:{}, requiredHours:9, autoTimer:null, uiMode:'desktop'
 };
 const THAI_MONTHS = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const DAY_TH = ['อา','จ','อ','พ','พฤ','ศ','ส'];
@@ -706,8 +815,11 @@ function applyAdminUI(){
 
 // ══════════ INIT ══════════
 window.onload=function(){
+  document.body.classList.add('mode-desktop');
   const now=new Date();
-  document.getElementById('sel-month').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const curMonth=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('sel-month').value=curMonth;
+  document.getElementById('m-month').value=curMonth;
   const hy=document.getElementById('h-year');
   for(let y=now.getFullYear()-1;y<=now.getFullYear()+2;y++) hy.innerHTML+=`<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`;
   const ey=document.getElementById('ev-year');
@@ -716,14 +828,18 @@ window.onload=function(){
   showLoading('กำลังโหลดข้อมูล...');
   google.script.run.withSuccessHandler(ams=>{
     const sel=document.getElementById('sel-am');
-    ams.forEach(am=>{const o=document.createElement('option');o.value=am;o.textContent=am;sel.appendChild(o);});
-    if(ams.length===1){sel.value=ams[0];onAMChange();}
+    const msel=document.getElementById('m-am');
+    ams.forEach(am=>{
+      const o=document.createElement('option');o.value=am;o.textContent=am;sel.appendChild(o);
+      const o2=document.createElement('option');o2.value=am;o2.textContent=am;msel.appendChild(o2);
+    });
+    if(ams.length===1){sel.value=ams[0];onAMChange();msel.value=ams[0];onMAMChange();}
     hideLoading();
   }).withFailureHandler(e=>{hideLoading();toast('โหลด AM ล้มเหลว: '+e,'error');}).getAMList();
 };
 
 // โหลดสาขาเมื่อเลือก AM
-function onAMChange(){
+function onAMChange(preselect){
   const am=document.getElementById('sel-am').value;
   state.amCode=am;
   const bsel=document.getElementById('sel-branch');
@@ -737,6 +853,7 @@ function onAMChange(){
       o.textContent=`${b.branchCode} — ${b.branchName}`;
       bsel.appendChild(o);
     });
+    if(preselect) bsel.value=preselect;
     // เติม dropdown ของ export ด้วย
     const ex=document.getElementById('export-branch');
     ex.innerHTML='';
@@ -764,6 +881,7 @@ function loadSchedule(){
 // ══════════ RENDER GRID ══════════
 function renderSchedule(){
   const d=state.data; if(!d) return;
+  document.getElementById('m-list').innerHTML=''; // กันเซลล์ data-key ซ้ำกับโหมดมือถือ
   const daysInMonth=new Date(d.year,d.month,0).getDate();
   const holidaySet=new Set((d.holidayDays||[]).map(h=>h.day));
   const holidayName={};(d.holidayDays||[]).forEach(h=>holidayName[h.day]=h.name);
@@ -949,9 +1067,14 @@ function updateRowEditability(slot){
   const nameAttr=escAttr(slot.name);
   const empIdAttr=escAttr(slot.empId);
 
-  // อัปเดต/ซ่อนปุ่มลบตามสถานะ
+  // อัปเดต/ซ่อนปุ่มลบตามสถานะ (เดสก์ท็อป)
   const delBtn=document.querySelector(`.row-actions[data-actions="${slotId}"] .row-btn.del`);
   if(delBtn) delBtn.style.display=hasName?'inline-block':'none';
+  // ปุ่มลบ + การ์ด (มือถือ)
+  const mDel=document.querySelector(`.mcard[data-mcard="${slotId}"] .m-del`);
+  if(mDel) mDel.style.display=hasName?'block':'none';
+  const mCard=document.querySelector(`.mcard[data-mcard="${slotId}"]`);
+  if(mCard) mCard.classList.toggle('mcard-empty',!hasName);
 
   // แถบสีของแถวว่าง
   const tr=document.querySelector(`tr[data-slot="${slotId}"]:not([data-ot-row])`);
@@ -998,7 +1121,7 @@ function deleteSlot(slotId){
       toast('✓ ลบแล้ว','success');
       // เคลียร์ pending ของ slot นี้
       Object.keys(state.pending).forEach(k=>{if(k.startsWith(slotId+'-')) delete state.pending[k];});
-      loadSchedule();
+      reloadSchedule();
     }else toast('ลบล้มเหลว: '+res.error,'error');
   }).withFailureHandler(e=>toast('ลบล้มเหลว: '+e,'error')).deleteEmployeeSlot(slotId);
 }
@@ -1230,6 +1353,7 @@ function updateSaveBar(){
   const dirty=c>0||state.empDirty;
   document.getElementById('save-count').textContent=state.empDirty&&!c?'มีข้อมูลพนักงานรอบันทึก':`${c} ช่องรอบันทึก`;
   document.getElementById('save-bar').classList.toggle('visible',dirty);
+  const ms=document.getElementById('m-save');if(ms)ms.classList.toggle('visible',dirty);
 }
 
 // อ่านค่าอินพุตพนักงานทุกช่องเข้า state ก่อน (กันค่าที่ยังไม่ sync)
@@ -1342,7 +1466,7 @@ function saveNow(){
     if(res.success){
       state.pending={};state.empDirty=false;updateSaveBar();
       toast('✓ บันทึกสำเร็จ','success');
-      loadSchedule(); // โหลดใหม่จากเซิร์ฟเวอร์ ยืนยันข้อมูลตรงกัน
+      reloadSchedule(); // โหลดใหม่จากเซิร์ฟเวอร์ ยืนยันข้อมูลตรงกัน
     }else{
       toast('บันทึกล้มเหลว: '+res.error,'error');
       if(res.invalid) res.invalid.forEach(iv=>{const c=document.querySelector(`[data-key="${iv.slotId}-${iv.day}"]`);if(c)c.style.outline='2px solid #c62828';});
@@ -1606,6 +1730,156 @@ function renderDashboard(db){
   });
   html+='</tbody></table>';
   document.getElementById('db-table-wrap').innerHTML=html;
+}
+
+// ══════════ MODE SELECT + MOBILE ══════════
+function chooseMode(mode){
+  switchMode(mode);
+  document.getElementById('mode-select').style.display='none';
+}
+function openModeSelect(){document.getElementById('mode-select').style.display='flex';}
+
+function switchMode(mode){
+  state.uiMode=mode;
+  document.body.classList.remove('mode-desktop','mode-mobile');
+  document.body.classList.add('mode-'+mode);
+  syncFilters(mode);
+  // re-render ข้อมูลที่โหลดอยู่ให้ตรงโหมด (เคลียร์อีกฝั่งกัน data-key ซ้ำ)
+  if(state.data) renderActive();
+  else if(mode==='mobile') document.getElementById('m-list').innerHTML='<div class="m-empty"><div class="e-ico">📅</div><p>เลือกสาขาและเดือน แล้วกด "โหลดตาราง"</p></div>';
+}
+
+// ย้ายค่าตัวกรอง (AM/สาขา/เดือน) ข้ามโหมดให้ผู้ใช้ทำงานต่อเนื่อง
+function syncFilters(toMode){
+  if(toMode==='mobile'){
+    if(state.amCode){document.getElementById('m-am').value=state.amCode;onMAMChange(state.branchCode);}
+    document.getElementById('m-month').value=document.getElementById('sel-month').value||document.getElementById('m-month').value;
+  }else{
+    if(state.amCode){document.getElementById('sel-am').value=state.amCode;onAMChange(state.branchCode);}
+    document.getElementById('sel-month').value=document.getElementById('m-month').value||document.getElementById('sel-month').value;
+  }
+}
+
+function renderActive(){ if(state.uiMode==='mobile') renderMobileSchedule(); else renderSchedule(); }
+
+// โหลดตารางใหม่จากเซิร์ฟเวอร์ แล้ว render ตามโหมดปัจจุบัน (ใช้หลังบันทึก/ลบ)
+function reloadSchedule(){
+  if(!state.branchCode) return;
+  showLoading('กำลังโหลดตาราง...');
+  google.script.run.withSuccessHandler(data=>{
+    state.data=data;state.requiredHours=data.requiredHours||9;
+    hideLoading();renderActive();
+  }).withFailureHandler(e=>{hideLoading();toast('โหลดตารางล้มเหลว: '+e,'error');}).getBranchSchedule(state.branchCode,state.year,state.month);
+}
+
+// เลือก AM ในโหมดมือถือ → โหลดรายชื่อสาขา
+function onMAMChange(preselect){
+  const am=document.getElementById('m-am').value;
+  state.amCode=am;
+  const bsel=document.getElementById('m-branch');
+  bsel.innerHTML='<option value="">-- เลือกสาขา --</option>';
+  if(!am) return;
+  google.script.run.withSuccessHandler(branches=>{
+    branches.forEach(b=>{
+      const o=document.createElement('option');
+      o.value=b.branchCode;o.textContent=`${b.branchCode} — ${b.branchName}`;
+      bsel.appendChild(o);
+    });
+    if(preselect) bsel.value=preselect;
+  }).withFailureHandler(e=>toast('โหลดสาขาล้มเหลว: '+e,'error')).getBranchList(am);
+}
+
+function loadMobile(){
+  const am=document.getElementById('m-am').value;
+  const br=document.getElementById('m-branch').value;
+  const mon=document.getElementById('m-month').value;
+  if(!am){toast('เลือก AM ก่อน','error');return;}
+  if(!br){toast('กรุณาเลือกสาขาก่อน','error');return;}
+  if(!mon){toast('เลือกเดือนก่อน','error');return;}
+  const[y,m]=mon.split('-').map(Number);
+  state.amCode=am;state.branchCode=br;state.year=y;state.month=m;state.pending={};state.empDirty=false;
+  document.getElementById('table-wrap').innerHTML=''; // กัน data-key ซ้ำกับเดสก์ท็อป
+  showLoading('กำลังโหลดตาราง...');
+  google.script.run.withSuccessHandler(data=>{
+    state.data=data;state.requiredHours=data.requiredHours||9;
+    hideLoading();renderMobileSchedule();
+  }).withFailureHandler(e=>{hideLoading();toast('โหลดตารางล้มเหลว: '+e,'error');}).getBranchSchedule(br,y,m);
+}
+
+function toggleMCard(sid){
+  const c=document.querySelector(`.mcard[data-mcard="${sid}"]`);
+  if(c) c.classList.toggle('open');
+}
+
+// ── Render โหมดมือถือ: การ์ดรายคน + รายการวันแนวตั้ง (ใช้ data-key/ data-field ชุดเดียวกับเดสก์ท็อป) ──
+function renderMobileSchedule(){
+  const d=state.data; if(!d) return;
+  document.getElementById('table-wrap').innerHTML=''; // กัน data-key ซ้ำ
+  const daysInMonth=new Date(d.year,d.month,0).getDate();
+  const holidaySet=new Set((d.holidayDays||[]).map(h=>h.day));
+
+  const info=document.getElementById('m-info');
+  info.style.display='block';
+  info.innerHTML=`<div class="mi-name">${d.branchCode} · ${d.branchName||''}</div>
+    เวลาทำการ: ${d.workHours||'—'} · SM: ${d.smName||'—'}<br>
+    รอบ DC: <b>${d.dcSchedule||'—'}</b> · รอบ FDC: <b>${d.fdcSchedule||'—'}</b><br>
+    ${THAI_MONTHS[d.month]} ${d.year+543} · ${daysInMonth} วัน · วันหยุด ${(d.holidayDays||[]).length} วัน · ${d.requiredHours} ชม./กะ`;
+
+  let html='';
+  d.slots.forEach(slot=>{
+    const sid=slot.slotId;
+    const empShifts=(d.shifts&&d.shifts[sid])||{};
+    const otMap=(d.otShifts&&d.otShifts[sid])||{};
+    const sum=(d.summaries&&d.summaries[sid])||{};
+    const isSM=(slot.empType||'').toUpperCase()==='SM';
+    const hasName=!!(slot.name||slot.empId);
+
+    html+=`<div class="mcard ${isSM?'mcard-sm':''} ${hasName?'':'mcard-empty'}" data-mcard="${sid}">
+      <div class="mcard-head" onclick="toggleMCard('${sid}')">
+        <div class="mcard-no">${isSM?'SM':slot.slot}</div>
+        <div class="mcard-title">
+          <input class="m-name" data-field="name" data-slot="${sid}" value="${escAttr(slot.name)}" placeholder="+ พิมพ์ชื่อ-สกุล" oninput="onSlotInput('${sid}')" onclick="event.stopPropagation()">
+          <div class="mcard-sub" id="msub-${sid}">${hasName?`ทำงาน ${sum.totalWork||0} วัน · ${sum.totalHours||0} ชม. · OT ${sum.totalOT||0}`:'ยังว่าง — แตะเพื่อกรอกพนักงาน'}</div>
+        </div>
+        <span class="mcard-chevron">▾</span>
+      </div>
+      <div class="mcard-body">
+        <div class="m-empfields">
+          <div class="mf"><label>รหัสพนักงาน</label><input data-field="empId" data-slot="${sid}" value="${escAttr(slot.empId)}" oninput="onSlotInput('${sid}')" placeholder="รหัส"></div>
+          <div class="mf"><label>ชื่อเล่น</label><input data-field="nickname" data-slot="${sid}" value="${escAttr(slot.nickname)}" oninput="onSlotInput('${sid}')" placeholder="ชื่อเล่น"></div>
+          <div class="mf"><label>เบอร์โทร</label><input data-field="phone" data-slot="${sid}" value="${escAttr(slot.phone)}" oninput="onSlotInput('${sid}')" placeholder="📞 เบอร์โทร"></div>
+          <div class="mf"><label>วันหยุดประจำ</label><input data-field="dayOff" data-slot="${sid}" value="${escAttr(slot.dayOff)}" oninput="onSlotInput('${sid}')" placeholder="MON,WED"></div>
+        </div>`;
+
+    for(let day=1;day<=daysInMonth;day++){
+      const dow=new Date(d.year,d.month-1,day).getDay();
+      const isHol=holidaySet.has(day);
+      const cur=empShifts[day]||(isHol?'PH':'');
+      const cat=shiftCategory(cur);
+      const lbl=shiftLabel(cur,d.shiftTypes);
+      const key=`${sid}-${day}`;
+      const clickable=hasName;
+      const disCls=clickable?'':' disabled-cell';
+      const onclk=clickable?` onclick="openPicker('${sid}','${escAttr(slot.name)}','${escAttr(slot.empId)}',${day},'${cur}')"`:'';
+      const otVal=otMap[day]||'';
+      const p=otSplit(otVal);
+      const otOnclk=clickable?` onclick="openOTPicker('${sid}','${escAttr(slot.name)}','${escAttr(slot.empId)}',${day},'${escAttr(otVal)}')"`:'';
+      html+=`<div class="mday ${isHol?'mday-hol':''}">
+        <div class="mday-date">${day}<span>${DAY_TH[dow]}${isHol?'🎌':''}</span></div>
+        <div class="mcell-wrap">`;
+      if(cur) html+=`<span class="shift-cell shift-${cat}${disCls}"${onclk} data-key="${key}">${lbl||cur}</span>`;
+      else    html+=`<span class="shift-cell empty${disCls}"${onclk} data-key="${key}">+</span>`;
+      if(p.time) html+=`<span class="ot-cell has-ot${disCls}"${otOnclk} data-key="ot-${key}">${p.time}${p.reason?'📝':''}</span>`;
+      else       html+=`<span class="ot-cell empty-ot${disCls}"${otOnclk} data-key="ot-${key}">+OT</span>`;
+      html+=`</div></div>`;
+    }
+
+    html+=`<button class="m-del" onclick="deleteSlot('${sid}')" style="display:${hasName?'block':'none'}">🗑️ ลบพนักงานคนนี้</button>`;
+    html+=`</div></div>`;
+  });
+
+  document.getElementById('m-list').innerHTML=html;
+  updateSaveBar();
 }
 
 // ══════════ UTILS ══════════
