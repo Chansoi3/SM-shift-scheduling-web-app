@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบตารางรอบ SM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI','Sarabun',Arial,sans-serif;font-size:13px;background:#eef1f7;color:#1a1a2e;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+
+/* ── Professional polish ── */
+.filter-bar,.schedule-section,.stat-card,.month-card,.add-holiday-form{box-shadow:0 1px 3px rgba(26,35,126,.06),0 1px 2px rgba(0,0,0,.04)}
+.info-card{box-shadow:0 4px 14px rgba(26,35,126,.18)}
+.btn-primary{box-shadow:0 1px 2px rgba(26,35,126,.25)}
+.btn-success{box-shadow:0 1px 2px rgba(46,125,50,.25)}
+.btn{transition:all .15s ease}
+.btn:active{transform:translateY(1px)}
+.stat-card{transition:box-shadow .15s,transform .15s}
+.stat-card:hover{box-shadow:0 4px 12px rgba(26,35,126,.12);transform:translateY(-1px)}
+input:focus,select:focus{box-shadow:0 0 0 3px rgba(92,107,192,.12)}
+/* scrollbars */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#c5cae9;border-radius:6px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:#9fa8da;background-clip:content-box}
+.dialog{box-shadow:0 12px 40px rgba(0,0,0,.22)!important;animation:dlgIn .18s ease}
+@keyframes dlgIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit;font-size:12px}
+
+.app{display:flex;height:100vh}
+
+/* Sidebar */
+.sidebar{width:210px;min-width:210px;background:#1a237e;color:#fff;display:flex;flex-direction:column;overflow:hidden}
+.sidebar-logo{padding:16px;border-bottom:1px solid rgba(255,255,255,.12)}
+.sidebar-logo h2{font-size:14px;font-weight:700}
+.sidebar-logo p{font-size:10px;color:rgba(255,255,255,.55);margin-top:3px}
+.nav-section{padding:6px 0}
+.nav-label{font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,.4);padding:8px 16px 3px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 16px;font-size:12px;color:rgba(255,255,255,.75);border-left:3px solid transparent;transition:all .15s;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
+.nav-item.active{background:rgba(144,202,249,.18);color:#90caf9;border-left-color:#90caf9;font-weight:600}
+.nav-icon{font-size:15px;width:18px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:12px 16px;border-top:1px solid rgba(255,255,255,.1);font-size:10px;color:rgba(255,255,255,.4)}
+
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{background:#fff;border-bottom:1px solid #dde0ee;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:700;color:#1a237e}
+.topbar-sub{font-size:11px;color:#7986cb;margin-top:1px}
+.topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* Buttons */
+.btn{padding:6px 14px;border-radius:6px;border:none;font-size:12px;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:#1a237e;color:#fff}.btn-primary:hover{background:#283593}
+.btn-success{background:#2e7d32;color:#fff}.btn-success:hover{background:#388e3c}
+.btn-danger{background:#c62828;color:#fff}.btn-danger:hover{background:#d32f2f}
+.btn-outline{background:#fff;color:#1a237e;border:1.5px solid #1a237e}.btn-outline:hover{background:#e8eaf6}
+.btn-ghost{background:transparent;color:#5c6bc0;border:1px solid #c5cae9}.btn-ghost:hover{background:#e8eaf6}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.content{flex:1;overflow-y:auto;padding:16px 20px}
+.page{display:none}.page.active{display:block}
+
+/* Filter bar */
+.filter-bar{background:#fff;border-radius:10px;border:1px solid #dde0ee;padding:12px 16px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
+.filter-group{display:flex;flex-direction:column;gap:3px}
+.filter-label{font-size:10px;color:#7986cb;font-weight:600;text-transform:uppercase;letter-spacing:.7px}
+select,input[type=month],input[type=text],input[type=date],input[type=time]{border:1.5px solid #dde0ee;border-radius:6px;padding:5px 10px;color:#1a1a2e;background:#f8f9ff;outline:none;transition:border-color .15s}
+select:focus,input:focus{border-color:#5c6bc0}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1a237e;color:#fff;font-size:10px;font-weight:700;margin-right:4px}
+
+/* Branch info card */
+.info-card{background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff;border-radius:10px;padding:12px 18px;margin-bottom:14px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.info-item{display:flex;flex-direction:column}
+.info-val{font-size:13px;font-weight:700}
+.info-key{font-size:10px;color:rgba(255,255,255,.6);margin-top:1px}
+.info-sep{width:1px;background:rgba(255,255,255,.2);align-self:stretch}
+.dcfdc-chip{background:rgba(255,255,255,.15);padding:2px 10px;border-radius:8px;font-size:11px;font-weight:700}
+.dcfdc-chip b{color:#ffd54f}
+
+/* Stats */
+.stat-row{display:flex;gap:12px;margin-bottom:14px}
+.stat-card{flex:1;background:#fff;border-radius:10px;border:1px solid #dde0ee;padding:12px 14px;min-width:100px}
+.stat-val{font-size:22px;font-weight:800;color:#1a237e}
+.stat-label{font-size:10px;color:#7986cb;margin-top:2px}
+.stat-sub{font-size:10px;color:#43a047;margin-top:2px;font-weight:600}
+.stat-icon{float:right;font-size:20px;margin-top:-2px}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:2px solid #dde0ee;flex-shrink:0}
+.tab-btn{padding:8px 18px;font-size:12px;font-weight:600;color:#9e9e9e;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer}
+.tab-btn:hover{color:#3949ab}
+.tab-btn.active{color:#1a237e;border-bottom-color:#1a237e}
+
+/* Schedule table */
+.schedule-section{background:#fff;border-radius:0 0 10px 10px;border:1px solid #dde0ee;border-top:none;overflow:hidden;margin-bottom:14px}
+.section-header{padding:10px 16px;background:#f5f6ff;border-bottom:1px solid #dde0ee;display:flex;align-items:center;gap:8px;font-weight:700;font-size:12px;color:#1a237e;flex-shrink:0}
+.table-wrap{overflow-x:auto;max-height:calc(100vh - 400px)}
+table.schedule{border-collapse:collapse;font-size:11px;width:max-content}
+table.schedule th{padding:5px 4px;font-size:10px;font-weight:700;color:#3949ab;background:#e8eaf6;border:1px solid #c5cae9;white-space:nowrap;text-align:center;position:sticky;top:0;z-index:2}
+table.schedule th.sticky-col{position:sticky;z-index:3}
+table.schedule td{padding:3px 4px;border:1px solid #eef0fa;text-align:center;vertical-align:middle}
+table.schedule td.sticky-col{position:sticky;background:#fff;z-index:1}
+/* sticky columns: # | ชื่อ | สาขา/วันหยุด */
+.c-idx{left:0;min-width:36px}
+.c-name{left:36px;min-width:215px;text-align:left}
+.c-off{left:251px;min-width:90px}
+table.schedule td.c-idx{background:#f5f6ff;font-weight:700;color:#3949ab}
+table.schedule td.c-name{text-align:left}
+table.schedule tr:nth-child(even) td:not(.sticky-col){background:#fafbff}
+table.schedule tr.sm-row td{background:#f0f4ff!important}
+table.schedule tr.sm-row td.sticky-col{background:#e8edf8!important}
+table.schedule tr.empty-slot td.c-name{background:#fffdf5}
+table.schedule th.day-holiday,table.schedule td.day-holiday{background:#fff0f0!important;color:#c62828!important}
+table.schedule th.day-weekend{background:#f3f4ff!important;color:#5c6bc0!important}
+table.schedule td.sum-col{background:#f0f4ff!important;font-weight:700;color:#283593;min-width:40px}
+table.schedule th.sum-col{background:#dde3f8!important;color:#1a237e!important}
+
+.emp-name-input{border:1px solid transparent;background:transparent;width:115px;font-size:11px;font-weight:600;color:#1a1a2e;padding:2px 4px;border-radius:4px}
+.emp-name-input:hover{border-color:#dde0ee;background:#fff}
+.emp-name-input:focus{border-color:#5c6bc0;background:#fff}
+.emp-id-input{border:1px solid transparent;background:transparent;width:70px;font-size:9px;color:#9e9e9e;padding:1px 4px;border-radius:4px}
+.emp-id-input:hover{border-color:#dde0ee;background:#fff}
+.emp-id-input:focus{border-color:#5c6bc0;background:#fff}
+.ei{border:1.5px solid #e0e4ef;background:#f8f9ff;font-size:11px;padding:4px 7px;border-radius:5px;color:#1a1a2e;transition:border-color .15s}
+.ei:hover{border-color:#c5cae9}
+.ei:focus{border-color:#5c6bc0;background:#fff}
+table.emp-edit td{padding:5px 6px}
+.dayoff-input{border:1px solid transparent;background:transparent;width:80px;font-size:10px;color:#7986cb;padding:2px 4px;border-radius:4px}
+.dayoff-input:hover{border-color:#dde0ee;background:#fff}
+.dayoff-input:focus{border-color:#5c6bc0;background:#fff;color:#1a1a2e}
+.row-actions{display:inline-flex;gap:2px;margin-left:2px}
+.row-btn{border:none;background:transparent;font-size:12px;cursor:pointer;padding:1px 3px;border-radius:3px;line-height:1}
+.row-btn.save{color:#2e7d32}.row-btn.save:hover{background:#e8f5e9}
+.row-btn.del{color:#ef5350}.row-btn.del:hover{background:#ffebee}
+.branch-chip{display:inline-block;padding:1px 6px;border-radius:10px;font-size:9px;font-weight:700;background:#e3f2fd;color:#1565c0}
+
+/* Shift cell */
+.shift-cell{display:inline-flex;align-items:center;justify-content:center;min-width:66px;padding:2px 3px;border-radius:4px;font-size:9.5px;font-weight:700;cursor:pointer;transition:transform .1s,box-shadow .1s;white-space:nowrap;border:1px solid transparent}
+.shift-cell:hover{transform:scale(1.05);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.shift-cell.empty{min-width:66px;background:#fafafa;color:#ccc;border:1px dashed #ddd;font-size:13px}
+.shift-cell.disabled-cell{cursor:not-allowed;opacity:.45}
+.shift-AM{background:#fff8e1;color:#f57f17;border-color:#ffe082}
+.shift-PM{background:#e3f2fd;color:#1565c0;border-color:#90caf9}
+.shift-NIGHT{background:#ede7f6;color:#4527a0;border-color:#b39ddb}
+.shift-LONG{background:#fce4ec;color:#880e4f;border-color:#f48fb1}
+.shift-OFF{background:#f5f5f5;color:#757575;border-color:#e0e0e0}
+.shift-HOLIDAY{background:#ffcdd2;color:#c62828;border-color:#ef9a9a}
+.shift-LEAVE{background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7}
+.shift-SICK{background:#fff9c4;color:#f57f17;border-color:#fff176}
+.shift-COMP{background:#fce4ec;color:#880e4f;border-color:#f48fb1}
+.shift-pending{outline:2px solid #ffa726!important;outline-offset:1px}
+/* OT row */
+table.schedule tr.ot-row td{background:#fff7ed!important;border-top:1px dashed #ffd8a8}
+table.schedule tr.ot-row td.sticky-col{background:#fff2e0!important}
+.ot-label{font-size:9px;font-weight:700;color:#e8590c;display:flex;align-items:center;gap:3px}
+.ot-cell{display:inline-flex;align-items:center;justify-content:center;min-width:60px;padding:1px 3px;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid transparent;color:#e8590c}
+.ot-cell.has-ot{background:#ffe8cc;border-color:#ffc078}
+.ot-cell.empty-ot{background:transparent;color:#dab; border:1px dashed #ffd8a8;color:#d0a890}
+.ot-cell:hover{filter:brightness(.95);transform:scale(1.05)}
+.ot-cell.disabled-cell{cursor:not-allowed;opacity:.4}
+
+/* Picker */
+.picker-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.3)}
+.picker-modal{position:fixed;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);z-index:101;padding:14px;width:380px;top:50%;left:50%;transform:translate(-50%,-50%);max-height:90vh;overflow-y:auto}
+.picker-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.picker-header h4{font-size:12px;font-weight:700;color:#1a237e}
+.picker-close{background:none;border:none;font-size:20px;color:#999;line-height:1;cursor:pointer}
+.picker-close:hover{color:#333}
+.picker-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.picker-group{display:flex;flex-direction:column;gap:4px}
+.picker-group-label{font-size:9px;font-weight:700;color:#7986cb;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px}
+.pick-btn{padding:6px 8px;border-radius:6px;border:1.5px solid;font-size:11px;font-weight:700;text-align:center;cursor:pointer;transition:all .15s}
+.pick-btn:hover{filter:brightness(.93)}
+.pick-btn.selected{outline:2px solid #1a237e;outline-offset:1px}
+.custom-box{border-top:1px dashed #ddd;padding-top:10px;margin-top:4px;margin-bottom:10px}
+.custom-box-label{font-size:10px;font-weight:700;color:#1a237e;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.custom-time-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.custom-time-row label{font-size:10px;color:#7986cb}
+.hour-display{font-size:12px;font-weight:800;padding:3px 10px;border-radius:6px;background:#e8f5e9;color:#2e7d32}
+.hour-display.invalid{background:#ffebee;color:#c62828}
+.hour-warn{font-size:10px;color:#c62828;margin-top:5px;display:none}
+.hour-warn.show{display:block}
+.picker-footer{display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #eee;padding-top:10px}
+
+/* Legend */
+.legend{display:flex;gap:6px;flex-wrap:wrap;padding:8px 0;margin-bottom:4px;font-size:10px;color:#7986cb;align-items:center}
+.legend span{font-weight:700}
+
+/* Save bar */
+.save-bar{display:none;position:fixed;bottom:20px;right:24px;background:#1a237e;color:#fff;border-radius:10px;padding:10px 16px;align-items:center;gap:10px;box-shadow:0 4px 16px rgba(0,0,0,.25);z-index:50}
+.save-bar.visible{display:flex}
+.save-count{font-size:12px}
+.save-spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:none}
+.save-spinner.active{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Export dialog */
+.dialog-overlay{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.3);display:none;align-items:center;justify-content:center}
+.dialog-overlay.show{display:flex}
+.dialog{background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);width:420px;padding:18px}
+.dialog h3{font-size:14px;color:#1a237e;margin-bottom:14px}
+.export-opt{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1.5px solid #dde0ee;border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.export-opt:hover{border-color:#5c6bc0;background:#f8f9ff}
+.export-opt.selected{border-color:#1a237e;background:#e8eaf6}
+.export-opt input{margin:0}
+.export-opt .eo-icon{font-size:20px}
+.export-opt .eo-title{font-weight:700;font-size:12px}
+.export-opt .eo-desc{font-size:10px;color:#9e9e9e;margin-top:1px}
+.export-branch-sel{margin:6px 0 12px 36px;display:none}
+.export-branch-sel.show{display:block}
+.dialog-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+
+/* Validation dialog */
+.vdialog{width:500px;max-width:92vw;max-height:82vh;display:flex;flex-direction:column;padding:20px}
+.vhead{display:flex;gap:14px;align-items:flex-start;padding-bottom:14px;border-bottom:1px solid #eef0fa;margin-bottom:12px}
+.vhead-icon{font-size:30px;line-height:1;background:#fff3e0;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.vhead h3{font-size:16px;color:#c62828;margin:0}
+.vhead p{font-size:11px;color:#7986cb;margin-top:3px;line-height:1.4}
+#validate-list{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:9px;padding-right:4px}
+.vp-card{border:1px solid #ffd8a8;border-left:4px solid #ef5350;border-radius:10px;background:#fffaf7;padding:11px 13px}
+.vp-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.vp-no{width:22px;height:22px;border-radius:50%;background:#ef5350;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.vp-name{font-size:13px;font-weight:700;color:#1a237e}
+.vp-slot{font-size:10px;color:#9e9e9e;background:#eef0fa;padding:1px 8px;border-radius:8px}
+.vp-line{display:flex;gap:7px;align-items:flex-start;font-size:11px;color:#555;margin-top:4px;line-height:1.5}
+.vp-line .vp-ico{flex-shrink:0}
+.vp-tag{display:inline-block;background:#ffebee;color:#c62828;border:1px solid #ffcdd2;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:600;margin:1px 2px 1px 0}
+.vp-days{color:#e65100;font-weight:600}
+
+/* Notification bell */
+.bell-btn{margin-left:auto;position:relative;background:#fff;border:1.5px solid #dde0ee;border-radius:8px;width:34px;height:30px;font-size:15px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.bell-btn:hover{background:#e8eaf6;border-color:#9fa8da}
+.bell-badge{position:absolute;top:-6px;right:-6px;background:#ef5350;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff}
+.topbar-actions{margin-left:8px!important}
+/* events notif dropdown */
+.notif-pop{position:absolute;top:46px;right:20px;width:320px;max-height:60vh;overflow-y:auto;background:#fff;border:1px solid #dde0ee;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.18);z-index:120;display:none;animation:dlgIn .15s ease}
+.notif-pop.show{display:block}
+.notif-head{padding:11px 14px;border-bottom:1px solid #eef0fa;font-weight:700;font-size:12px;color:#1a237e;display:flex;align-items:center;gap:6px;position:sticky;top:0;background:#fff}
+.notif-item{padding:10px 14px;border-bottom:1px solid #f5f5f5;display:flex;gap:10px;align-items:flex-start}
+.notif-item:last-child{border-bottom:none}
+.notif-when{flex-shrink:0;width:50px;text-align:center}
+.notif-when .nw-badge{font-size:9px;font-weight:700;padding:2px 0;border-radius:6px;display:block}
+.nw-today{background:#ffebee;color:#c62828}.nw-soon{background:#fff3e0;color:#e65100}.nw-later{background:#e8eaf6;color:#3949ab}
+.notif-when .nw-date{font-size:9px;color:#9e9e9e;margin-top:2px}
+.notif-body .nb-title{font-size:12px;font-weight:700;color:#1a237e}
+.notif-body .nb-detail{font-size:10px;color:#7986cb;margin-top:2px;line-height:1.4}
+.notif-empty{padding:24px;text-align:center;color:#bbb;font-size:11px}
+/* event marker in grid header */
+table.schedule th.day-event{box-shadow:inset 0 -3px 0 #e8590c}
+
+/* Holiday page */
+.holiday-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px}
+.month-card{background:#fff;border-radius:10px;border:1px solid #dde0ee;overflow:hidden}
+.month-card-header{background:#1a237e;color:#fff;padding:8px 12px;font-weight:700;font-size:12px;display:flex;justify-content:space-between;align-items:center}
+.month-card-body{padding:8px 12px}
+.holiday-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f5f5f5;font-size:11px}
+.holiday-item:last-child{border-bottom:none}
+.holiday-date{font-weight:700;color:#1a237e;min-width:60px}
+.holiday-name{flex:1;color:#333}
+.holiday-del{background:none;border:none;color:#ef5350;font-size:14px;cursor:pointer;padding:0 4px}
+.holiday-del:hover{color:#c62828}
+.add-holiday-form{background:#fff;border-radius:10px;border:1px solid #dde0ee;padding:16px;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px}
+
+/* Toast / loading / empty */
+.toast{position:fixed;bottom:80px;right:24px;background:#333;color:#fff;padding:10px 16px;border-radius:8px;font-size:12px;z-index:200;transition:opacity .3s;pointer-events:none;max-width:340px}
+.toast.success{background:#2e7d32}.toast.error{background:#c62828}
+.toast.hidden{opacity:0}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;z-index:500;flex-direction:column;gap:12px;font-size:13px;color:#3949ab;font-weight:600}
+.loading-overlay.hidden{display:none}
+.loader{width:36px;height:36px;border:3px solid #c5cae9;border-top-color:#1a237e;border-radius:50%;animation:spin .8s linear infinite}
+.empty-state{text-align:center;padding:40px 20px;color:#9e9e9e}
+.empty-state .empty-icon{font-size:40px;margin-bottom:8px}
+.empty-state p{font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <h2>📅 SM Schedule</h2>
+      <p>ระบบตารางรอบการทำงาน</p>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">ตารางรอบ</div>
+      <div class="nav-item active" onclick="showPage('schedule')" id="nav-schedule"><span class="nav-icon">📋</span> กรอกตารางรอบ</div>
+    </div>
+
+    <!-- Admin section (ซ่อนจนกว่าจะปลดล็อก) -->
+    <div class="nav-section" id="admin-section" style="display:none">
+      <div class="nav-label">🔧 Admin</div>
+      <div class="nav-item" onclick="showPage('dashboard')" id="nav-dashboard"><span class="nav-icon">📊</span> แดชบอร์ด</div>
+      <div class="nav-item" onclick="showPage('holidays')" id="nav-holidays"><span class="nav-icon">🎌</span> วันหยุดนักขัตฤกษ์</div>
+      <div class="nav-item" onclick="showPage('events')" id="nav-events"><span class="nav-icon">📌</span> วันสำคัญ</div>
+      <div class="nav-item" onclick="showPage('employees')" id="nav-employees"><span class="nav-icon">👥</span> ข้อมูลพนักงาน</div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="nav-item" id="admin-toggle" onclick="toggleAdmin()" style="border-left:none;padding:8px 0;margin-bottom:6px">
+        <span class="nav-icon" id="admin-icon">🔒</span> <span id="admin-toggle-label">เข้าสู่โหมด Admin</span>
+      </div>
+      v2.1 · SM Schedule System
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">📋 กรอกตารางรอบ</div>
+        <div class="topbar-sub" id="topbar-sub">เลือกสาขาและเดือนเพื่อเริ่มกรอกข้อมูล</div>
+      </div>
+      <button class="bell-btn" id="bell" onclick="openEventsNotif()" title="แจ้งเตือนวันสำคัญ">🔔<span class="bell-badge" id="bell-badge" style="display:none">0</span></button>
+      <div class="topbar-actions" id="topbar-actions">
+        <button class="btn btn-success btn-sm" onclick="onExportClick()" id="btn-export">⬇️ Export Excel</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ═══════ PAGE: SCHEDULE ═══════ -->
+      <div class="page active" id="page-schedule">
+
+        <!-- Filter -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <span class="filter-label">รหัสเขต (AM)</span>
+            <select id="sel-am" onchange="onAMChange()" style="width:110px">
+              <option value="">-- เลือก --</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">รหัสสาขา</span>
+            <select id="sel-branch" style="width:280px">
+              <option value="">-- เลือกสาขา --</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">เดือน / ปี</span>
+            <input type="month" id="sel-month" style="width:130px">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="loadSchedule()">🔍 โหลดตาราง</button>
+          <div id="filter-status" style="font-size:11px;color:#7986cb;align-self:center;margin-left:auto"></div>
+        </div>
+
+        <!-- Branch info + DC/FDC -->
+        <div class="info-card" id="info-card" style="display:none">
+          <div class="info-item"><span class="info-val" id="ic-branch">—</span><span class="info-key">รหัสสาขา</span></div>
+          <div class="info-sep"></div>
+          <div class="info-item"><span class="info-val" id="ic-branchname">—</span><span class="info-key">ชื่อสาขา</span></div>
+          <div class="info-sep"></div>
+          <div class="info-item"><span class="info-val" id="ic-workhours">—</span><span class="info-key">เวลาทำการ</span></div>
+          <div class="info-sep"></div>
+          <div class="info-item"><span class="info-val" id="ic-sm">—</span><span class="info-key">SM</span></div>
+          <div class="info-sep"></div>
+          <span class="dcfdc-chip">รอบ DC: <b id="ic-dc">—</b></span>
+          <span class="dcfdc-chip">รอบ FDC: <b id="ic-fdc">—</b></span>
+          <div style="margin-left:auto;display:flex;gap:14px;align-items:center">
+            <div class="info-item"><span class="info-val" id="ic-holidays">—</span><span class="info-key">วันหยุดนักขัตฤกษ์</span></div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stat-row" id="stat-row" style="display:none">
+          <div class="stat-card"><span class="stat-icon">⏰</span><div class="stat-val" id="st-am">—</div><div class="stat-label">วันกะเช้า (รวม)</div></div>
+          <div class="stat-card"><span class="stat-icon">🌆</span><div class="stat-val" id="st-pm">—</div><div class="stat-label">วันกะบ่าย (รวม)</div></div>
+          <div class="stat-card"><span class="stat-icon">🌙</span><div class="stat-val" id="st-night">—</div><div class="stat-label">วันกะดึก (รวม)</div></div>
+          <div class="stat-card"><span class="stat-icon">🔴</span><div class="stat-val" id="st-off">—</div><div class="stat-label">วันหยุดรวม</div></div>
+          <div class="stat-card"><span class="stat-icon">👥</span><div class="stat-val" id="st-filled">—</div><div class="stat-label">พนักงานที่กรอก</div><div class="stat-sub" id="st-filled-sub"></div></div>
+        </div>
+
+        <!-- Tabs + Grid -->
+        <div id="grid-wrap" style="display:none">
+          <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('grid',this)">📋 ตารางรอบรายวัน</button>
+            <button class="tab-btn" onclick="switchTab('summary',this)">📊 สรุปชั่วโมง</button>
+          </div>
+
+          <div id="tab-grid">
+            <div class="schedule-section">
+              <div class="section-header">
+                👤 พนักงานสาขา
+                <span id="grid-badge" style="background:#e8eaf6;color:#3949ab;border-radius:4px;font-size:10px;padding:1px 7px;font-weight:700;margin-left:6px"></span>
+                <span style="margin-left:auto;font-size:10px;color:#9e9e9e;font-weight:400">กรอกชื่อ + คลิกเลือกกะ แล้วกด 💾 บันทึก (ต้องกรอกครบทุกช่อง) · 🟠 รอบันทึก</span>
+              </div>
+              <div class="table-wrap" id="table-wrap">
+                <div class="empty-state"><div class="empty-icon">📅</div><p>เลือกสาขาและเดือน แล้วกด "โหลดตาราง"</p></div>
+              </div>
+            </div>
+            <div class="legend">
+              <span>กะ:</span>
+              <span class="shift-cell shift-AM">เช้า</span>
+              <span class="shift-cell shift-PM">บ่าย</span>
+              <span class="shift-cell shift-NIGHT">ดึก</span>
+              <span class="shift-cell shift-OFF">OFF</span>
+              <span class="shift-cell shift-HOLIDAY">🎌 หยุดนักขัตฤกษ์</span>
+              <span class="shift-cell shift-LEAVE">ลาพักร้อน</span>
+              <span class="shift-cell shift-SICK">ลาป่วย</span>
+              <span class="shift-cell shift-COMP">ชดเชยขัตฤกษ์</span>
+              <span class="ot-cell has-ot" style="padding:2px 8px">⏱️ โอที</span>
+            </div>
+          </div>
+
+          <div id="tab-summary" style="display:none">
+            <div class="schedule-section">
+              <div class="section-header">📊 สรุปชั่วโมงและวันทำงาน</div>
+              <div class="table-wrap" id="summary-wrap"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="empty-state" style="text-align:center;padding:60px 20px;color:#9e9e9e">
+          <div style="font-size:48px;margin-bottom:12px">📅</div>
+          <div style="font-size:14px;font-weight:600;color:#5c6bc0;margin-bottom:6px">ยังไม่ได้เลือกข้อมูล</div>
+          <div style="font-size:12px">เลือก AM → สาขา → เดือน แล้วกดปุ่ม "โหลดตาราง"</div>
+        </div>
+      </div>
+
+      <!-- ═══════ PAGE: HOLIDAYS ═══════ -->
+      <div class="page" id="page-holidays">
+        <div class="add-holiday-form">
+          <div class="filter-group"><span class="filter-label">วันที่</span><input type="date" id="h-date" style="width:140px"></div>
+          <div class="filter-group"><span class="filter-label">ชื่อวันหยุด</span><input type="text" id="h-name" placeholder="เช่น วันแรงงาน" style="width:220px"></div>
+          <div class="filter-group"><span class="filter-label">ปี (ค.ศ.)</span><select id="h-year" onchange="loadHolidays()" style="width:90px"></select></div>
+          <label style="align-self:flex-end;display:flex;align-items:center;gap:6px;font-size:12px;padding-bottom:7px"><input type="checkbox" id="h-national" checked> นักขัตฤกษ์</label>
+          <button class="btn btn-primary btn-sm" onclick="addHoliday()" style="align-self:flex-end">+ เพิ่มวันหยุด</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadHolidays()" style="align-self:flex-end">🔄 รีเฟรช</button>
+        </div>
+        <div id="holiday-grid-wrap" class="holiday-grid"></div>
+      </div>
+
+      <!-- ═══════ PAGE: EVENTS (วันสำคัญ) ═══════ -->
+      <div class="page" id="page-events">
+        <div class="add-holiday-form">
+          <div class="filter-group"><span class="filter-label">วันที่</span><input type="date" id="ev-date" style="width:140px"></div>
+          <div class="filter-group"><span class="filter-label">ชื่อวันสำคัญ</span><input type="text" id="ev-title" placeholder="เช่น ประชุมประจำเดือน / ตรวจสต๊อก" style="width:240px"></div>
+          <div class="filter-group"><span class="filter-label">รายละเอียด</span><input type="text" id="ev-detail" placeholder="โน้ตเพิ่มเติม (ไม่บังคับ)" style="width:240px"></div>
+          <div class="filter-group"><span class="filter-label">ปี (ค.ศ.)</span><select id="ev-year" onchange="loadEventsAdmin()" style="width:90px"></select></div>
+          <button class="btn btn-primary btn-sm" onclick="addEvent()" style="align-self:flex-end">+ เพิ่มวันสำคัญ</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadEventsAdmin()" style="align-self:flex-end">🔄 รีเฟรช</button>
+        </div>
+        <div id="event-grid-wrap" class="holiday-grid"></div>
+      </div>
+
+      <!-- ═══════ PAGE: EMPLOYEES ═══════ -->
+      <div class="page" id="page-employees">
+        <div style="background:#fff;border-radius:10px;border:1px solid #dde0ee;overflow:hidden">
+          <div class="section-header">👥 ข้อมูลพนักงาน <span style="margin-left:auto;font-size:10px;color:#9e9e9e;font-weight:400">แก้ไขในช่อง แล้วกด 💾 เพื่อบันทึกรายคน</span></div>
+          <div class="table-wrap" id="emp-table-wrap"><div class="empty-state"><div class="empty-icon">👥</div><p>กำลังโหลด...</p></div></div>
+        </div>
+      </div>
+
+      <!-- ═══════ PAGE: DASHBOARD ═══════ -->
+      <div class="page" id="page-dashboard">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <span class="filter-label">เขต (AM)</span>
+            <select id="db-am" style="width:110px"></select>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">เดือน / ปี</span>
+            <input type="month" id="db-month" style="width:130px">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="loadDashboard()">🔍 โหลดสรุป</button>
+        </div>
+        <div class="stat-row" id="db-stats" style="display:none">
+          <div class="stat-card"><span class="stat-icon">🏪</span><div class="stat-val" id="db-branches">—</div><div class="stat-label">จำนวนสาขา</div></div>
+          <div class="stat-card"><span class="stat-icon">👥</span><div class="stat-val" id="db-staff">—</div><div class="stat-label">พนักงานรวม</div></div>
+          <div class="stat-card"><span class="stat-icon">🔴</span><div class="stat-val" id="db-holidays">—</div><div class="stat-label">วันหยุดนักขัตฤกษ์</div></div>
+          <div class="stat-card"><span class="stat-icon">⚠️</span><div class="stat-val" id="db-blanks">—</div><div class="stat-label">ช่องยังไม่กรอกรวม</div></div>
+        </div>
+        <div style="background:#fff;border-radius:10px;border:1px solid #dde0ee;overflow:hidden">
+          <div class="section-header">📊 สถานะตารางรอบรายสาขา</div>
+          <div class="table-wrap" id="db-table-wrap"><div class="empty-state"><div class="empty-icon">📊</div><p>เลือก AM และเดือน แล้วกด "โหลดสรุป"</p></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Shift Picker Modal -->
+<div class="picker-overlay" id="picker-overlay" style="display:none" onclick="closePicker()"></div>
+<div class="picker-modal" id="picker-modal" style="display:none">
+  <div class="picker-header">
+    <h4 id="picker-title">เลือกกะงาน</h4>
+    <button class="picker-close" onclick="closePicker()">×</button>
+  </div>
+  <div class="picker-grid" id="picker-grid"></div>
+
+  <!-- Custom time -->
+  <div class="custom-box">
+    <div class="custom-box-label">⌨️ กรอกเวลาเอง <span style="font-weight:400;color:#9e9e9e">(ต้องครบ <b id="req-hours">9</b> ชม.)</span></div>
+    <div class="custom-time-row">
+      <label>เริ่ม</label>
+      <input type="time" id="custom-start" onchange="onCustomTimeChange()" value="06:00">
+      <label>ถึง</label>
+      <input type="time" id="custom-end" onchange="onCustomTimeChange()" value="15:00">
+      <span class="hour-display" id="custom-hours">= 9.0 ชม.</span>
+      <button class="btn btn-primary btn-sm" id="custom-use-btn" onclick="useCustomTime()">ใช้เวลานี้</button>
+    </div>
+    <div class="hour-warn" id="custom-warn">⚠ ชั่วโมงไม่ครบ — ไม่สามารถใช้ได้</div>
+  </div>
+
+  <div class="picker-footer">
+    <button class="btn btn-ghost btn-sm" onclick="clearShift()">ลบ / เคลียร์</button>
+    <button class="btn btn-primary btn-sm" onclick="confirmShift()">✓ ยืนยัน</button>
+  </div>
+</div>
+
+<!-- OT Picker Modal -->
+<div class="picker-overlay" id="ot-overlay" style="display:none" onclick="closeOTPicker()"></div>
+<div class="picker-modal" id="ot-modal" style="display:none;width:340px">
+  <div class="picker-header">
+    <h4 id="ot-title" style="color:#e8590c">⏱️ บันทึกโอที (OT)</h4>
+    <button class="picker-close" onclick="closeOTPicker()">×</button>
+  </div>
+  <div style="font-size:11px;color:#7986cb;margin-bottom:8px">โอทีกรอกได้อิสระ ไม่บังคับครบชั่วโมง</div>
+  <div class="custom-time-row" style="margin-bottom:8px">
+    <label>เริ่ม</label>
+    <input type="time" id="ot-start" onchange="onOTTimeChange()" value="15:00">
+    <label>ถึง</label>
+    <input type="time" id="ot-end" onchange="onOTTimeChange()" value="18:00">
+    <span class="hour-display" id="ot-hours" style="background:#fff3e0;color:#e8590c">= 3.0 ชม.</span>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+    <button class="btn btn-ghost btn-sm" onclick="setOTPreset(1)">+1 ชม.</button>
+    <button class="btn btn-ghost btn-sm" onclick="setOTPreset(2)">+2 ชม.</button>
+    <button class="btn btn-ghost btn-sm" onclick="setOTPreset(3)">+3 ชม.</button>
+    <button class="btn btn-ghost btn-sm" onclick="setOTPreset(4)">+4 ชม.</button>
+  </div>
+  <div style="margin-bottom:10px">
+    <label style="font-size:10px;color:#e8590c;font-weight:700;display:block;margin-bottom:3px">📝 สาเหตุการทำ OT <span style="color:#c62828">* (จำเป็น)</span></label>
+    <input type="text" id="ot-note" placeholder="เช่น งานเยอะ / แทนเพื่อนลา / สต๊อกสินค้า" style="width:100%">
+  </div>
+  <div class="picker-footer">
+    <button class="btn btn-ghost btn-sm" onclick="clearOT()">ลบ OT</button>
+    <button class="btn btn-sm" style="background:#e8590c;color:#fff" onclick="useOTTime()">✓ บันทึก OT</button>
+  </div>
+</div>
+
+<!-- Export Dialog -->
+<div class="dialog-overlay" id="export-dialog">
+  <div class="dialog">
+    <h3>⬇️ Export ข้อมูลตารางรอบ</h3>
+    <label class="export-opt selected" onclick="selectExportMode('branch',this)">
+      <input type="radio" name="exmode" value="branch" checked>
+      <span class="eo-icon">🏪</span>
+      <div><div class="eo-title">รายสาขา</div><div class="eo-desc">เฉพาะสาขาที่เลือก</div></div>
+    </label>
+    <div class="export-branch-sel show" id="export-branch-sel">
+      <select id="export-branch" style="width:100%"></select>
+    </div>
+    <label class="export-opt" onclick="selectExportMode('sm',this)">
+      <input type="radio" name="exmode" value="sm">
+      <span class="eo-icon">👨‍💼</span>
+      <div><div class="eo-title">เฉพาะ SM</div><div class="eo-desc">ตารางของ SM ทุกสาขาในเขต</div></div>
+    </label>
+    <label class="export-opt" onclick="selectExportMode('all',this)">
+      <input type="radio" name="exmode" value="all">
+      <span class="eo-icon">📦</span>
+      <div><div class="eo-title">ทั้งหมด (ทุกสาขา)</div><div class="eo-desc">ทุกสาขาในเขต แยกชีตละสาขา</div></div>
+    </label>
+    <div class="dialog-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeExportDialog()">ยกเลิก</button>
+      <button class="btn btn-success btn-sm" onclick="doExport()">⬇️ Export</button>
+    </div>
+  </div>
+</div>
+
+<!-- Validation Dialog -->
+<div class="dialog-overlay" id="validate-dialog">
+  <div class="dialog vdialog">
+    <div class="vhead">
+      <div class="vhead-icon">⚠️</div>
+      <div>
+        <h3>กรอกข้อมูลไม่ครบ</h3>
+        <p id="validate-sub">แถวที่เริ่มกรอกแล้ว ต้องกรอกให้ครบทั้งข้อมูลพนักงานและตารางทุกวัน</p>
+      </div>
+    </div>
+    <div id="validate-list"></div>
+    <div class="dialog-footer">
+      <button class="btn btn-primary btn-sm" onclick="closeValidateDialog()">เข้าใจแล้ว ปิดหน้าต่าง</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notification popup (วันสำคัญใกล้ถึง) -->
+<div class="notif-pop" id="notif-pop">
+  <div class="notif-head">🔔 วันสำคัญที่ใกล้ถึง</div>
+  <div id="notif-list"></div>
+</div>
+
+<!-- Save bar / toast / loading -->
+<div class="save-bar" id="save-bar">
+  <div class="save-spinner" id="save-spinner"></div>
+  <span class="save-count" id="save-count">0 ช่องรอบันทึก</span>
+  <button class="btn btn-success btn-sm" id="save-bar-btn" onclick="saveNow()">💾 บันทึก</button>
+</div>
+<div class="toast hidden" id="toast"></div>
+<div class="loading-overlay hidden" id="loading"><div class="loader"></div><div id="loading-text">กำลังโหลด...</div></div>
+
+<script>
+// ══════════ STATE ══════════
+const state = {
+  amCode:'', branchCode:'', year:0, month:0,
+  data:null, pending:{}, pendingNames:{}, requiredHours:9, autoTimer:null
+};
+const THAI_MONTHS = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const DAY_TH = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+
+function shiftCategory(code){
+  if(!code) return '';
+  if(code==='OFF') return 'OFF';
+  if(code==='PH') return 'HOLIDAY';
+  if(code==='LEAVE') return 'LEAVE';
+  if(code==='SICK') return 'SICK';
+  if(code==='COMP') return 'COMP';
+  const h=parseInt((code.split(/[:.]/)[0])||'0');
+  if(h>=5&&h<=10) return 'AM';
+  if(h>=13&&h<=15) return 'PM';
+  if(h>=15) return 'NIGHT';
+  return 'AM';
+}
+function shiftLabel(code,types){
+  if(!code) return '';
+  const st=(types||[]).find(s=>s.code===code);
+  return st?st.label:code;
+}
+// แยกค่า OT "เวลา|สาเหตุ"
+function otSplit(v){
+  if(!v) return {time:'',reason:''};
+  v=String(v);const i=v.indexOf('|');
+  return i<0?{time:v,reason:''}:{time:v.slice(0,i),reason:v.slice(i+1)};
+}
+// คำนวณชั่วโมงจาก "HH:MM-HH:MM" → number | null (ตัดสาเหตุ OT ออกก่อน)
+function spanHours(code){
+  if(!code) return null;
+  code=String(code).split('|')[0].trim();
+  const m=code.match(/^(\d{1,2})[:.](\d{2})\s*-\s*(\d{1,2})[:.](\d{2})$/);
+  if(!m) return null;
+  let s=+m[1]+(+m[2])/60, e=+m[3]+(+m[4])/60;
+  if(e<=s) e+=24;
+  return Math.round((e-s)*100)/100;
+}
+function isWorking(code){ return code && !['OFF','PH','LEAVE','SICK','COMP'].includes(code); }
+
+// ══════════ NAV ══════════
+const PAGE_TITLES={
+  schedule:['📋 กรอกตารางรอบ','เลือกสาขาและเดือนเพื่อกรอกข้อมูล'],
+  holidays:['🎌 วันหยุดนักขัตฤกษ์','จัดการวันหยุด / วันหยุดพิเศษ'],
+  events:['📌 วันสำคัญ','จัดการวันสำคัญ + แจ้งเตือน'],
+  employees:['👥 ข้อมูลพนักงาน','รายชื่อพนักงานในระบบ'],
+  dashboard:['📊 แดชบอร์ด','ภาพรวมตารางรอบทุกสาขา']
+};
+const ADMIN_PAGES=['holidays','events','employees','dashboard'];
+
+function showPage(name){
+  if(ADMIN_PAGES.includes(name)&&!state.admin){toast('กรุณาเข้าสู่โหมด Admin ก่อน','error');return;}
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const nav=document.getElementById('nav-'+name);if(nav)nav.classList.add('active');
+  const[t,s]=PAGE_TITLES[name]||['',''];
+  document.getElementById('topbar-title').textContent=t;
+  document.getElementById('topbar-sub').textContent=s;
+  document.getElementById('topbar-actions').style.display=(name==='schedule')?'flex':'none';
+  if(name==='holidays') loadHolidays();
+  if(name==='events') loadEventsAdmin();
+  if(name==='employees') loadEmployees();
+  if(name==='dashboard') initDashboardFilters();
+}
+
+// ══════════ ADMIN MODE ══════════
+function toggleAdmin(){
+  if(state.admin){
+    // ออกจากโหมด admin
+    state.admin=false;
+    applyAdminUI();
+    showPage('schedule');
+    toast('ออกจากโหมด Admin แล้ว','');
+    return;
+  }
+  const pin=prompt('🔒 กรอกรหัส Admin:');
+  if(pin===null) return;
+  google.script.run.withSuccessHandler(res=>{
+    if(res.success){state.admin=true;applyAdminUI();toast('✓ เข้าสู่โหมด Admin แล้ว','success');}
+    else toast('รหัสไม่ถูกต้อง','error');
+  }).withFailureHandler(e=>toast('ตรวจสอบรหัสล้มเหลว: '+e,'error')).verifyAdminPin(pin);
+}
+
+function applyAdminUI(){
+  document.getElementById('admin-section').style.display=state.admin?'block':'none';
+  // Export: admin = ทุกโหมด, ผู้ใช้ทั่วไป = เฉพาะสาขาตัวเอง (ปุ่มแสดงเสมอ)
+  document.getElementById('btn-export').textContent=state.admin?'⬇️ Export Excel':'⬇️ Export Excel (สาขานี้)';
+  document.getElementById('admin-icon').textContent=state.admin?'🔓':'🔒';
+  document.getElementById('admin-toggle-label').textContent=state.admin?'ออกจากโหมด Admin':'เข้าสู่โหมด Admin';
+}
+
+// ══════════ INIT ══════════
+window.onload=function(){
+  const now=new Date();
+  document.getElementById('sel-month').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const hy=document.getElementById('h-year');
+  for(let y=now.getFullYear()-1;y<=now.getFullYear()+2;y++) hy.innerHTML+=`<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`;
+  const ey=document.getElementById('ev-year');
+  for(let y=now.getFullYear()-1;y<=now.getFullYear()+2;y++) ey.innerHTML+=`<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`;
+  loadUpcomingEvents();
+  showLoading('กำลังโหลดข้อมูล...');
+  google.script.run.withSuccessHandler(ams=>{
+    const sel=document.getElementById('sel-am');
+    ams.forEach(am=>{const o=document.createElement('option');o.value=am;o.textContent=am;sel.appendChild(o);});
+    if(ams.length===1){sel.value=ams[0];onAMChange();}
+    hideLoading();
+  }).withFailureHandler(e=>{hideLoading();toast('โหลด AM ล้มเหลว: '+e,'error');}).getAMList();
+};
+
+// โหลดสาขาเมื่อเลือก AM
+function onAMChange(){
+  const am=document.getElementById('sel-am').value;
+  state.amCode=am;
+  const bsel=document.getElementById('sel-branch');
+  bsel.innerHTML='<option value="">-- เลือกสาขา --</option>';
+  if(!am) return;
+  google.script.run.withSuccessHandler(branches=>{
+    state.branches=branches;
+    branches.forEach(b=>{
+      const o=document.createElement('option');
+      o.value=b.branchCode;
+      o.textContent=`${b.branchCode} — ${b.branchName}`;
+      bsel.appendChild(o);
+    });
+    // เติม dropdown ของ export ด้วย
+    const ex=document.getElementById('export-branch');
+    ex.innerHTML='';
+    branches.forEach(b=>{ex.innerHTML+=`<option value="${b.branchCode}">${b.branchCode} — ${b.branchName}</option>`;});
+  }).withFailureHandler(e=>toast('โหลดสาขาล้มเหลว: '+e,'error')).getBranchList(am);
+}
+
+// ══════════ LOAD SCHEDULE ══════════
+function loadSchedule(){
+  const am=document.getElementById('sel-am').value;
+  const br=document.getElementById('sel-branch').value;
+  const mon=document.getElementById('sel-month').value;
+  if(!am){toast('เลือก AM ก่อน','error');return;}
+  if(!br){toast('กรุณาเลือกรหัสสาขาก่อน','error');return;}
+  if(!mon){toast('เลือกเดือนก่อน','error');return;}
+  const[y,m]=mon.split('-').map(Number);
+  state.amCode=am;state.branchCode=br;state.year=y;state.month=m;state.pending={};state.pendingNames={};state.empDirty=false;
+  showLoading('กำลังโหลดตาราง...');
+  google.script.run.withSuccessHandler(data=>{
+    state.data=data;state.requiredHours=data.requiredHours||9;
+    hideLoading();renderSchedule();
+  }).withFailureHandler(e=>{hideLoading();toast('โหลดตารางล้มเหลว: '+e,'error');}).getBranchSchedule(br,y,m);
+}
+
+// ══════════ RENDER GRID ══════════
+function renderSchedule(){
+  const d=state.data; if(!d) return;
+  const daysInMonth=new Date(d.year,d.month,0).getDate();
+  const holidaySet=new Set((d.holidayDays||[]).map(h=>h.day));
+  const holidayName={};(d.holidayDays||[]).forEach(h=>holidayName[h.day]=h.name);
+
+  document.getElementById('info-card').style.display='flex';
+  document.getElementById('stat-row').style.display='flex';
+  document.getElementById('grid-wrap').style.display='block';
+  document.getElementById('empty-state').style.display='none';
+  document.getElementById('ic-branch').textContent=d.branchCode;
+  document.getElementById('ic-branchname').textContent=d.branchName||'—';
+  document.getElementById('ic-workhours').textContent=d.workHours||'—';
+  document.getElementById('ic-sm').textContent=d.smName||'—';
+  document.getElementById('ic-dc').textContent=d.dcSchedule||'—';
+  document.getElementById('ic-fdc').textContent=d.fdcSchedule||'—';
+  document.getElementById('ic-holidays').textContent=`${(d.holidayDays||[]).length} วัน`;
+  document.getElementById('grid-badge').textContent=`${THAI_MONTHS[d.month]} ${d.year+543} · ${daysInMonth} วัน · ${d.requiredHours} ชม./กะ`;
+  document.getElementById('topbar-sub').textContent=`${d.branchCode} ${d.branchName} · ${THAI_MONTHS[d.month]} ${d.year+543}`;
+  document.getElementById('req-hours').textContent=d.requiredHours;
+
+  let html='<table class="schedule"><thead><tr>';
+  html+='<th class="sticky-col c-idx">#</th>';
+  html+='<th class="sticky-col c-name">ชื่อ-สกุล / รหัส</th>';
+  html+='<th class="sticky-col c-off">วันหยุดประจำ</th>';
+  const eventByDay={};(d.monthEvents||[]).forEach(ev=>{(eventByDay[ev.day]=eventByDay[ev.day]||[]).push(ev.detail?`${ev.title} — ${ev.detail}`:ev.title);});
+  for(let day=1;day<=daysInMonth;day++){
+    const dow=new Date(d.year,d.month-1,day).getDay();
+    const isHol=holidaySet.has(day),isWknd=dow===0||dow===6,hasEv=!!eventByDay[day];
+    let cls=isHol?'day-holiday':(isWknd?'day-weekend':'');
+    if(hasEv) cls+=' day-event';
+    const tipParts=[];if(isHol)tipParts.push(holidayName[day]);if(hasEv)tipParts.push('📌 '+eventByDay[day].join(' · '));
+    const tip=tipParts.length?` title="${escAttr(tipParts.join(' | '))}"`:'';
+    html+=`<th class="${cls}"${tip}>${day}<br><span style="font-size:8px;font-weight:400">${DAY_TH[dow]}${isHol?'🎌':''}${hasEv?'📌':''}</span></th>`;
+  }
+  html+='<th class="sum-col">OFF</th><th class="sum-col">เช้า</th><th class="sum-col">บ่าย</th><th class="sum-col">ดึก</th><th class="sum-col">วันทำงาน</th><th class="sum-col">รวมชม.</th><th class="sum-col" style="background:#ffe8cc!important;color:#e8590c!important">โอที</th>';
+  html+='</tr></thead><tbody>';
+
+  let tAM=0,tPM=0,tNight=0,tOff=0,filled=0;
+
+  d.slots.forEach(slot=>{
+    const sid=slot.slotId;
+    const empShifts=(d.shifts&&d.shifts[sid])?d.shifts[sid]:{};
+    const sum=(d.summaries&&d.summaries[sid])?d.summaries[sid]:{};
+    const isSM=(slot.empType||'').toUpperCase()==='SM';
+    const hasName=!!(slot.name||slot.empId);
+    if(hasName) filled++;
+    tAM+=sum.totalAM||0;tPM+=sum.totalPM||0;tNight+=sum.totalNight||0;tOff+=sum.totalOff||0;
+
+    html+=`<tr class="${isSM?'sm-row':''} ${hasName?'':'empty-slot'}" data-slot="${sid}">`;
+    html+=`<td class="sticky-col c-idx">${isSM?'<b>SM</b>':slot.slot}</td>`;
+    html+=`<td class="sticky-col c-name">
+      <div style="display:flex;align-items:flex-start;gap:2px">
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <input class="emp-name-input" placeholder="+ พิมพ์ชื่อ-สกุล" value="${escAttr(slot.name)}"
+                 oninput="onSlotInput('${sid}')" data-field="name" data-slot="${sid}">
+          <div style="display:flex;gap:2px">
+            <input class="emp-id-input" placeholder="รหัสพนักงาน" value="${escAttr(slot.empId)}"
+                   oninput="onSlotInput('${sid}')" data-field="empId" data-slot="${sid}" style="width:75px">
+            <input class="emp-id-input" placeholder="ชื่อเล่น" value="${escAttr(slot.nickname)}"
+                   oninput="onSlotInput('${sid}')" data-field="nickname" data-slot="${sid}" style="width:48px">
+            <input class="emp-id-input" placeholder="📞 เบอร์โทร" value="${escAttr(slot.phone)}"
+                   oninput="onSlotInput('${sid}')" data-field="phone" data-slot="${sid}" style="width:78px">
+          </div>
+        </div>
+        <div class="row-actions" data-actions="${sid}">
+          <span class="slot-saved" id="saved-${sid}" style="font-size:10px;color:#43a047;display:none">✓</span>
+          <button class="row-btn del" title="ลบพนักงาน" onclick="deleteSlot('${sid}')" style="display:${hasName?'inline-block':'none'}">🗑️</button>
+        </div>
+      </div>
+    </td>`;
+    html+=`<td class="sticky-col c-off">
+      <input class="dayoff-input" placeholder="เช่น MON,WED" value="${escAttr(slot.dayOff)}"
+             oninput="onSlotInput('${sid}')" data-field="dayOff" data-slot="${sid}">
+    </td>`;
+
+    for(let day=1;day<=daysInMonth;day++){
+      const isHol=holidaySet.has(day);
+      const cur=empShifts[day]||(isHol?'PH':'');
+      const cat=shiftCategory(cur);
+      const key=`${sid}-${day}`;
+      const pend=!!state.pending[key];
+      const colCls=isHol?' day-holiday':'';
+      const clickable=hasName;
+      const disCls=clickable?'':' disabled-cell';
+      const onclkAttr=clickable?` onclick="openPicker('${sid}','${escAttr(slot.name)}','${escAttr(slot.empId)}',${day},'${cur}')"`:'';
+      const titleAttr=clickable?'':' title="พิมพ์ชื่อพนักงานก่อน"';
+      if(cur){
+        const lbl=shiftLabel(cur,d.shiftTypes);
+        html+=`<td class="${colCls}"><span class="shift-cell shift-${cat}${pend?' shift-pending':''}${disCls}"${onclkAttr} data-key="${key}"${titleAttr}>${lbl||cur}</span></td>`;
+      }else{
+        html+=`<td class="${colCls}"><span class="shift-cell empty${pend?' shift-pending':''}${disCls}"${onclkAttr} data-key="${key}"${titleAttr}>+</span></td>`;
+      }
+    }
+
+    html+=`<td class="sum-col">${sum.totalOff||'—'}</td><td class="sum-col">${sum.totalAM||'—'}</td><td class="sum-col">${sum.totalPM||'—'}</td><td class="sum-col">${sum.totalNight||'—'}</td><td class="sum-col">${sum.totalWork||'—'}</td><td class="sum-col">${sum.totalHours||'—'}</td><td class="sum-col" style="background:#fff7ed;color:#e8590c">${sum.totalOT||'—'}</td>`;
+    html+='</tr>';
+
+    // ── แถวโอที (เรนเดอร์เสมอ — เปิดให้คลิกทันทีที่มีชื่อพนักงาน) ──
+    {
+      const otMap=(d.otShifts&&d.otShifts[sid])?d.otShifts[sid]:{};
+      const otClickable=hasName;
+      const otDisCls=otClickable?'':' disabled-cell';
+      const otTitleAttr=otClickable?'':' title="พิมพ์ชื่อพนักงานก่อน"';
+      html+=`<tr class="ot-row" data-slot="${sid}" data-ot-row="${sid}">`;
+      html+=`<td class="sticky-col c-idx"></td>`;
+      html+=`<td class="sticky-col c-name"><span class="ot-label">⏱️ โอที (OT)</span></td>`;
+      html+=`<td class="sticky-col c-off"></td>`;
+      for(let day=1;day<=daysInMonth;day++){
+        const otVal=otMap[day]||'';
+        const parsed=otSplit(otVal);
+        const key=`ot-${sid}-${day}`;
+        const pend=!!state.pending[key];
+        const isHol=holidaySet.has(day);
+        const colCls=isHol?' day-holiday':'';
+        const onclkAttr=otClickable?` onclick="openOTPicker('${sid}','${escAttr(slot.name)}','${escAttr(slot.empId)}',${day},'${escAttr(otVal)}')"`:'';
+        if(parsed.time){
+          const tip=parsed.reason?` title="สาเหตุ: ${escAttr(parsed.reason)}"`:otTitleAttr;
+          const mark=parsed.reason?'<sup style="color:#c62828">📝</sup>':'';
+          html+=`<td class="${colCls}"><span class="ot-cell has-ot${pend?' shift-pending':''}${otDisCls}"${onclkAttr} data-key="${key}"${tip}>${parsed.time}${mark}</span></td>`;
+        }else{
+          html+=`<td class="${colCls}"><span class="ot-cell empty-ot${pend?' shift-pending':''}${otDisCls}"${onclkAttr} data-key="${key}"${otTitleAttr}>+</span></td>`;
+        }
+      }
+      html+=`<td class="sum-col" colspan="7" style="background:#fff7ed;color:#e8590c;font-size:9px;text-align:left;padding-left:6px;font-weight:400">⏱️ ระบุเวลา + สาเหตุ OT รายวัน (📝 = มีสาเหตุ)</td>`;
+      html+='</tr>';
+    }
+  });
+
+  html+='</tbody></table>';
+  document.getElementById('table-wrap').innerHTML=html;
+
+  document.getElementById('st-am').textContent=tAM;
+  document.getElementById('st-pm').textContent=tPM;
+  document.getElementById('st-night').textContent=tNight;
+  document.getElementById('st-off').textContent=tOff;
+  document.getElementById('st-filled').textContent=filled+' / 8';
+  document.getElementById('st-filled-sub').textContent=filled<8?`ว่าง ${8-filled} ช่อง`:'เต็ม';
+  document.getElementById('st-filled-sub').style.color=filled<8?'#7986cb':'#43a047';
+
+  renderSummary(d);
+  updateSaveBar();
+}
+
+function renderSummary(d){
+  let html='<table class="schedule"><thead><tr>';
+  html+='<th class="sticky-col c-idx">#</th><th class="sticky-col c-name">ชื่อ-สกุล</th>';
+  html+='<th>วันทำงาน</th><th>เช้า</th><th>บ่าย</th><th>ดึก</th><th>OFF/หยุด</th><th>รวมชม.</th><th style="background:#ffe8cc!important;color:#e8590c!important">โอที</th><th>หมายเหตุ</th>';
+  html+='</tr></thead><tbody>';
+  d.slots.forEach(slot=>{
+    if(!(slot.name||slot.empId)) return;
+    const s=(d.summaries&&d.summaries[slot.slotId])||{};
+    html+=`<tr><td class="sticky-col c-idx">${(slot.empType||'').toUpperCase()==='SM'?'SM':slot.slot}</td>
+      <td class="sticky-col c-name"><b>${slot.name||'—'}</b><div style="font-size:9px;color:#9e9e9e">${slot.empId||''}</div></td>
+      <td class="sum-col">${s.totalWork||0}</td><td class="sum-col">${s.totalAM||0}</td><td class="sum-col">${s.totalPM||0}</td>
+      <td class="sum-col">${s.totalNight||0}</td><td class="sum-col">${s.totalOff||0}</td><td class="sum-col">${s.totalHours||0}</td>
+      <td class="sum-col" style="background:#fff7ed;color:#e8590c">${s.totalOT||0}</td>
+      <td style="font-size:10px;color:#7986cb">${s.note||''}</td></tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('summary-wrap').innerHTML=html;
+}
+
+// ══════════ EDIT EMPLOYEE (ไม่มี auto-save แล้ว — กดปุ่มบันทึกเอง) ══════════
+// แค่ทำเครื่องหมายว่ามีการแก้ไข + sync ค่าเข้า state + ปลดล็อกช่องตารางทันที
+function onSlotInput(slotId){
+  const slot=state.data&&state.data.slots.find(s=>s.slotId===slotId);
+  if(!slot) return;
+  const g=f=>{const el=document.querySelector(`input[data-field="${f}"][data-slot="${slotId}"]`);return el?(el.value||'').trim():'';};
+  slot.name=g('name');slot.empId=g('empId');slot.nickname=g('nickname');slot.phone=g('phone');slot.dayOff=g('dayOff');
+  state.empDirty=true;
+  updateRowEditability(slot);
+  updateSaveBar();
+}
+
+// ── เปิด/ปิดสิทธิ์การคลิกของเซลล์กะ + OT ตามว่าแถวมีชื่อพนักงานหรือยัง ──
+function updateRowEditability(slot){
+  const d=state.data;if(!d) return;
+  const slotId=slot.slotId;
+  const hasName=!!(slot.name||slot.empId);
+  const daysInMonth=new Date(d.year,d.month,0).getDate();
+  const empShifts=(d.shifts&&d.shifts[slotId])||{};
+  const otMap=(d.otShifts&&d.otShifts[slotId])||{};
+  const holidaySet=new Set((d.holidayDays||[]).map(h=>h.day));
+  const nameAttr=escAttr(slot.name);
+  const empIdAttr=escAttr(slot.empId);
+
+  // อัปเดต/ซ่อนปุ่มลบตามสถานะ
+  const delBtn=document.querySelector(`.row-actions[data-actions="${slotId}"] .row-btn.del`);
+  if(delBtn) delBtn.style.display=hasName?'inline-block':'none';
+
+  // แถบสีของแถวว่าง
+  const tr=document.querySelector(`tr[data-slot="${slotId}"]:not([data-ot-row])`);
+  if(tr) tr.classList.toggle('empty-slot',!hasName);
+
+  for(let day=1;day<=daysInMonth;day++){
+    // shift cell
+    const sCell=document.querySelector(`[data-key="${slotId}-${day}"]`);
+    if(sCell){
+      const cur=empShifts[day]||(holidaySet.has(day)?'PH':'');
+      if(hasName){
+        sCell.classList.remove('disabled-cell');
+        sCell.setAttribute('onclick',`openPicker('${slotId}','${nameAttr}','${empIdAttr}',${day},'${cur}')`);
+        sCell.removeAttribute('title');
+      }else{
+        sCell.classList.add('disabled-cell');
+        sCell.removeAttribute('onclick');
+        sCell.title='พิมพ์ชื่อพนักงานก่อน';
+      }
+    }
+    // OT cell
+    const oCell=document.querySelector(`[data-key="ot-${slotId}-${day}"]`);
+    if(oCell){
+      const otVal=otMap[day]||'';
+      if(hasName){
+        oCell.classList.remove('disabled-cell');
+        oCell.setAttribute('onclick',`openOTPicker('${slotId}','${nameAttr}','${empIdAttr}',${day},'${escAttr(otVal)}')`);
+        if(!otVal) oCell.removeAttribute('title');
+      }else{
+        oCell.classList.add('disabled-cell');
+        oCell.removeAttribute('onclick');
+        oCell.title='พิมพ์ชื่อพนักงานก่อน';
+      }
+    }
+  }
+}
+
+function deleteSlot(slotId){
+  if(Object.keys(state.pending).length||state.empDirty){
+    if(!confirm('⚠ มีข้อมูลที่ยังไม่บันทึก จะหายไป\nต้องการลบพนักงานคนนี้เลยหรือไม่?')) return;
+  } else if(!confirm('ลบพนักงานคนนี้และตารางรอบทั้งหมด?')) return;
+  google.script.run.withSuccessHandler(res=>{
+    if(res.success){
+      toast('✓ ลบแล้ว','success');
+      // เคลียร์ pending ของ slot นี้
+      Object.keys(state.pending).forEach(k=>{if(k.startsWith(slotId+'-')) delete state.pending[k];});
+      loadSchedule();
+    }else toast('ลบล้มเหลว: '+res.error,'error');
+  }).withFailureHandler(e=>toast('ลบล้มเหลว: '+e,'error')).deleteEmployeeSlot(slotId);
+}
+
+// ══════════ SHIFT PICKER ══════════
+let pk={slotId:'',name:'',empId:'',day:0,current:'',selected:''};
+
+function openPicker(slotId,name,empId,day,cur){
+  pk={slotId,name,empId,day,current:cur,selected:cur};
+  const d=state.data;
+  document.getElementById('picker-title').textContent=`${name||'พนักงาน'} · ${day} ${THAI_MONTHS[state.month]}`;
+
+  const cats={AM:{label:'กะเช้า',items:[]},PM:{label:'กะบ่าย',items:[]},NIGHT:{label:'กะดึก',items:[]},
+              OFF:{label:'หยุด',items:[]},HOLIDAY:{label:'วันหยุด',items:[]},LEAVE:{label:'การลา',items:[]}};
+  (d.shiftTypes||[]).forEach(st=>{
+    if(cats[st.category]) cats[st.category].items.push(st);
+    else if(st.category==='LONG') cats.AM.items.push(st);
+    else if(st.category==='COMP') cats.LEAVE.items.push(st);
+  });
+
+  let html='';
+  Object.entries(cats).forEach(([k,{label,items}])=>{
+    if(!items.length) return;
+    html+=`<div class="picker-group"><div class="picker-group-label">${label}</div>`;
+    items.forEach(st=>{
+      const sel=st.code===pk.selected?' selected':'';
+      html+=`<button class="pick-btn${sel}" style="background:${st.color||'#f5f5f5'};color:#333;border-color:${st.color||'#ddd'}" onclick="selectShift('${st.code}',this)">${st.label}</button>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('picker-grid').innerHTML=html;
+
+  // ถ้า current เป็น custom time → ใส่ในช่อง
+  const sp=spanHours(pk.current);
+  if(sp!==null){
+    const m=pk.current.match(/^(\d{1,2})[:.](\d{2})\s*-\s*(\d{1,2})[:.](\d{2})$/);
+    if(m){document.getElementById('custom-start').value=`${m[1].padStart(2,'0')}:${m[2]}`;document.getElementById('custom-end').value=`${m[3].padStart(2,'0')}:${m[4]}`;}
+  }
+  onCustomTimeChange();
+
+  document.getElementById('picker-overlay').style.display='block';
+  document.getElementById('picker-modal').style.display='block';
+}
+
+function selectShift(code,btn){
+  pk.selected=code;
+  document.querySelectorAll('.pick-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+// คำนวณชั่วโมง custom + validate
+function onCustomTimeChange(){
+  const s=document.getElementById('custom-start').value;
+  const e=document.getElementById('custom-end').value;
+  const disp=document.getElementById('custom-hours');
+  const warn=document.getElementById('custom-warn');
+  const btn=document.getElementById('custom-use-btn');
+  if(!s||!e){disp.textContent='—';return;}
+  const code=`${s}-${e}`;
+  const hrs=spanHours(code);
+  disp.textContent=`= ${hrs.toFixed(1)} ชม.`;
+  if(hrs<state.requiredHours){
+    disp.classList.add('invalid');warn.classList.add('show');
+    btn.disabled=true;
+    warn.textContent=`⚠ ได้ ${hrs.toFixed(1)} ชม. — ต้องครบ ${state.requiredHours} ชม. ถึงจะบันทึกได้`;
+  }else{
+    disp.classList.remove('invalid');warn.classList.remove('show');btn.disabled=false;
+  }
+}
+
+function useCustomTime(){
+  const s=document.getElementById('custom-start').value;
+  const e=document.getElementById('custom-end').value;
+  if(!s||!e){toast('กรอกเวลาเริ่มและสิ้นสุด','error');return;}
+  const code=`${s}-${e}`;
+  const hrs=spanHours(code);
+  if(hrs<state.requiredHours){toast(`ชั่วโมงไม่ครบ ${state.requiredHours} ชม. ห้ามบันทึก`,'error');return;}
+  applyShift(pk.slotId,pk.name,pk.empId,pk.day,code);
+  closePicker();
+}
+
+function confirmShift(){
+  // ถ้าเลือกกะ time-based ที่ชั่วโมงไม่ครบ → ห้าม
+  if(isWorking(pk.selected)){
+    const hrs=spanHours(pk.selected);
+    if(hrs!==null&&hrs<state.requiredHours){toast(`กะนี้ ${hrs.toFixed(1)} ชม. ไม่ครบ ${state.requiredHours} ชม. ห้ามบันทึก`,'error');return;}
+  }
+  applyShift(pk.slotId,pk.name,pk.empId,pk.day,pk.selected);
+  closePicker();
+}
+
+function clearShift(){ applyShift(pk.slotId,pk.name,pk.empId,pk.day,''); closePicker(); }
+function closePicker(){
+  document.getElementById('picker-overlay').style.display='none';
+  document.getElementById('picker-modal').style.display='none';
+}
+
+// ══════════ OT PICKER ══════════
+let otk={slotId:'',name:'',empId:'',day:0};
+function openOTPicker(slotId,name,empId,day,cur){
+  otk={slotId,name,empId,day};
+  document.getElementById('ot-title').textContent=`⏱️ OT · ${name||'พนักงาน'} · ${day} ${THAI_MONTHS[state.month]}`;
+  const parsed=otSplit(cur||'');
+  const m=String(parsed.time).match(/^(\d{1,2})[:.](\d{2})\s*-\s*(\d{1,2})[:.](\d{2})$/);
+  if(m){document.getElementById('ot-start').value=`${m[1].padStart(2,'0')}:${m[2]}`;document.getElementById('ot-end').value=`${m[3].padStart(2,'0')}:${m[4]}`;}
+  // สาเหตุ OT ของวันนั้น (รายวัน)
+  const noteEl=document.getElementById('ot-note');noteEl.value=parsed.reason||'';noteEl.style.borderColor='';
+  onOTTimeChange();
+  document.getElementById('ot-overlay').style.display='block';
+  document.getElementById('ot-modal').style.display='block';
+}
+function closeOTPicker(){document.getElementById('ot-overlay').style.display='none';document.getElementById('ot-modal').style.display='none';}
+function onOTTimeChange(){
+  const s=document.getElementById('ot-start').value,e=document.getElementById('ot-end').value;
+  const disp=document.getElementById('ot-hours');
+  if(!s||!e){disp.textContent='—';return;}
+  const hrs=spanHours(`${s}-${e}`);
+  disp.textContent=`= ${hrs.toFixed(1)} ชม.`;
+}
+function setOTPreset(hours){
+  const s=document.getElementById('ot-start').value||'15:00';
+  const[sh,sm]=s.split(':').map(Number);
+  let eh=(sh+hours)%24;
+  document.getElementById('ot-end').value=`${String(eh).padStart(2,'0')}:${String(sm).padStart(2,'0')}`;
+  onOTTimeChange();
+}
+function useOTTime(){
+  const s=document.getElementById('ot-start').value,e=document.getElementById('ot-end').value;
+  if(!s||!e){toast('กรอกเวลา OT','error');return;}
+  const reason=(document.getElementById('ot-note').value||'').trim();
+  if(!reason){
+    const ni=document.getElementById('ot-note');
+    ni.style.borderColor='#c62828';ni.focus();
+    toast('⚠ ต้องระบุสาเหตุการทำ OT ทุกครั้ง','error');
+    return;
+  }
+  applyOT(otk.slotId,otk.name,otk.empId,otk.day,`${s}-${e}`);
+  closeOTPicker();
+}
+function clearOT(){ applyOT(otk.slotId,otk.name,otk.empId,otk.day,''); closeOTPicker(); }
+
+function applyOT(slotId,name,empId,day,ot){
+  const key=`ot-${slotId}-${day}`,d=state.data;
+  const reason=(document.getElementById('ot-note').value||'').trim();
+  // ฝังสาเหตุไว้กับเวลา "เวลา|สาเหตุ" (รายวัน)
+  const otTime=otSplit(ot).time;
+  const combined=otTime ? (otTime + (reason?('|'+reason):'')) : '';
+  if(!d.otShifts) d.otShifts={};
+  if(!d.otShifts[slotId]) d.otShifts[slotId]={};
+  if(combined==='') delete d.otShifts[slotId][day];
+  else d.otShifts[slotId][day]=combined;
+  state.pending[key]={slotId,empId,name,day,shift:combined,kind:'ot'};
+
+  const cell=document.querySelector(`[data-key="${key}"]`);
+  if(cell){
+    const p=otSplit(combined);
+    if(p.time){
+      cell.className='ot-cell has-ot shift-pending';
+      cell.innerHTML=p.time+(p.reason?'<sup style="color:#c62828">📝</sup>':'');
+      if(p.reason) cell.title='สาเหตุ: '+p.reason; else cell.removeAttribute('title');
+    }else{cell.className='ot-cell empty-ot shift-pending';cell.textContent='+';cell.removeAttribute('title');}
+    cell.setAttribute('onclick',`openOTPicker('${slotId}','${escAttr(name)}','${escAttr(empId)}',${day},'${escAttr(combined)}')`);
+  }
+  recalcLocal(slotId);
+  updateSaveBar();
+}
+
+// ══════════ APPLY SHIFT ══════════
+function applyShift(slotId,name,empId,day,shift){
+  const key=`${slotId}-${day}`,d=state.data;
+  if(!d.shifts[slotId]) d.shifts[slotId]={};
+  if(shift==='') delete d.shifts[slotId][day];
+  else d.shifts[slotId][day]=shift;
+  state.pending[key]={slotId,empId,name,day,shift};
+
+  const cell=document.querySelector(`[data-key="${key}"]`);
+  if(cell){
+    const cat=shiftCategory(shift),lbl=shiftLabel(shift,d.shiftTypes);
+    if(shift){cell.className=`shift-cell shift-${cat} shift-pending`;cell.textContent=lbl||shift;}
+    else{cell.className='shift-cell empty shift-pending';cell.textContent='+';}
+    cell.setAttribute('onclick',`openPicker('${slotId}','${escAttr(name)}','${escAttr(empId)}',${day},'${shift}')`);
+  }
+  recalcLocal(slotId);
+  updateSaveBar();
+}
+
+function recalcLocal(slotId){
+  const d=state.data,sh=d.shifts[slotId]||{};
+  const ot=(d.otShifts&&d.otShifts[slotId])?d.otShifts[slotId]:{};
+  const daysInMonth=new Date(d.year,d.month,0).getDate();
+  const holidaySet=new Set((d.holidayDays||[]).map(h=>h.day));
+  let off=0,am=0,pm=0,night=0,work=0,hours=0,otHours=0;
+  for(let day=1;day<=daysInMonth;day++){
+    let v=sh[day]||(holidaySet.has(day)?'PH':'');
+    if(v){
+      if(!isWorking(v)){off++;}
+      else{
+        work++;
+        const hr=spanHours(v);if(hr!==null) hours+=hr;
+        const h=parseInt(v.split(/[:.]/)[0]);
+        if(h>=5&&h<=10) am++;else if(h>=13&&h<=15) pm++;else if(h>=15) night++;
+      }
+    }
+    if(ot[day]){const oh=spanHours(ot[day]);if(oh!==null) otHours+=oh;}
+  }
+  if(!d.summaries) d.summaries={};
+  if(!d.summaries[slotId]) d.summaries[slotId]={};
+  Object.assign(d.summaries[slotId],{totalOff:off,totalAM:am,totalPM:pm,totalNight:night,totalWork:work,totalHours:Math.round(hours*10)/10,totalOT:Math.round(otHours*10)/10});
+}
+
+// ══════════ AUTO-FILL HOLIDAY ══════════
+function fillHolidaysAuto(){
+  if(!state.data){toast('โหลดตารางก่อน','error');return;}
+  const d=state.data,holidaySet=new Set((d.holidayDays||[]).map(h=>h.day));
+  if(!holidaySet.size){toast('ไม่มีวันหยุดนักขัตฤกษ์ในเดือนนี้','error');return;}
+  let filled=0;
+  d.slots.forEach(slot=>{
+    if(!(slot.name||slot.empId)) return; // เฉพาะช่องที่มีพนักงาน
+    holidaySet.forEach(day=>{
+      if(!((d.shifts[slot.slotId]||{})[day])){applyShift(slot.slotId,slot.name,slot.empId,day,'PH');filled++;}
+    });
+  });
+  toast(filled?`✓ เติม PH ${filled} ช่อง`:'ทุกช่องวันหยุดมีข้อมูลแล้ว',filled?'success':'');
+}
+
+// ══════════ SAVE ══════════
+function updateSaveBar(){
+  const c=Object.keys(state.pending).length;
+  const dirty=c>0||state.empDirty;
+  document.getElementById('save-count').textContent=state.empDirty&&!c?'มีข้อมูลพนักงานรอบันทึก':`${c} ช่องรอบันทึก`;
+  document.getElementById('save-bar').classList.toggle('visible',dirty);
+}
+
+// อ่านค่าอินพุตพนักงานทุกช่องเข้า state ก่อน (กันค่าที่ยังไม่ sync)
+function syncEmployeeInputs(){
+  if(!state.data) return;
+  state.data.slots.forEach(slot=>{
+    const g=f=>{const el=document.querySelector(`input[data-field="${f}"][data-slot="${slot.slotId}"]`);return el?(el.value||'').trim():undefined;};
+    const n=g('name');if(n!==undefined){slot.name=n;slot.empId=g('empId');slot.nickname=g('nickname');slot.phone=g('phone');slot.dayOff=g('dayOff');}
+  });
+}
+
+// ── Validation modal (มืออาชีพ) ──
+function showValidationModal(problems){
+  document.getElementById('validate-sub').textContent=
+    `พบ ${problems.length} แถวที่ยังกรอกไม่ครบ — แถวที่เริ่มกรอกแล้วต้องกรอกให้ครบทั้งข้อมูลพนักงานและตารางทุกวัน`;
+  let html='';
+  problems.forEach((p,i)=>{
+    html+=`<div class="vp-card"><div class="vp-head">
+      <span class="vp-no">${i+1}</span>
+      <span class="vp-name">${escAttr(p.label)}</span>
+      <span class="vp-slot">ช่องที่ ${p.slot}</span></div>`;
+    if(p.missEmp.length){
+      html+=`<div class="vp-line"><span class="vp-ico">👤</span><span><b>ข้อมูลพนักงานที่ขาด:</b><br>${p.missEmp.map(m=>`<span class="vp-tag">${m}</span>`).join('')}</span></div>`;
+    }
+    if(p.missDays.length){
+      const days=p.missDays.slice(0,20).join(', ')+(p.missDays.length>20?' …':'');
+      html+=`<div class="vp-line"><span class="vp-ico">📅</span><span><b>ตารางกะที่ยังไม่กรอก:</b> ${p.missDays.length} วัน <span class="vp-days">(วันที่ ${days})</span></span></div>`;
+    }
+    if(p.otMissDays&&p.otMissDays.length){
+      const od=p.otMissDays.join(', ');
+      html+=`<div class="vp-line"><span class="vp-ico">⏱️</span><span><b>OT ที่ยังไม่ใส่สาเหตุ:</b> <span class="vp-days">วันที่ ${od}</span></span></div>`;
+    }
+    html+='</div>';
+  });
+  document.getElementById('validate-list').innerHTML=html;
+  document.getElementById('validate-dialog').classList.add('show');
+}
+function closeValidateDialog(){document.getElementById('validate-dialog').classList.remove('show');}
+
+function saveNow(){
+  if(!state.data){toast('โหลดตารางก่อน','error');return;}
+  syncEmployeeInputs();
+  const d=state.data;
+  const daysInMonth=new Date(d.year,d.month,0).getDate();
+  const holidaySet=new Set((d.holidayDays||[]).map(h=>h.day));
+
+  const employees=[];
+  const problems=[];
+
+  d.slots.forEach(slot=>{
+    const sid=slot.slotId;
+    const shiftsMap=d.shifts[sid]||{};
+    const otMap=(d.otShifts&&d.otShifts[sid])||{};
+    const hasEmp=!!(slot.name||slot.empId||slot.nickname||slot.phone||slot.dayOff);
+    const hasShift=Object.keys(shiftsMap).length>0||Object.keys(otMap).length>0;
+    if(!hasEmp&&!hasShift) return; // ช่องว่าง ข้าม
+
+    // ── ตรวจข้อมูลพนักงานให้ครบ ──
+    const miss=[];
+    if(!slot.name)     miss.push('ชื่อ-สกุล');
+    if(!slot.empId)    miss.push('รหัสพนักงาน');
+    if(!slot.nickname) miss.push('ชื่อเล่น');
+    if(!slot.phone)    miss.push('เบอร์โทร');
+    if(!slot.dayOff)   miss.push('วันหยุดประจำสัปดาห์');
+
+    // ── ตรวจตารางกะให้ครบทุกวัน (วันหยุดนักขัตฤกษ์นับเป็น PH อัตโนมัติ) ──
+    const missDays=[];
+    for(let dd=1;dd<=daysInMonth;dd++){
+      const v=shiftsMap[dd]||(holidaySet.has(dd)?'PH':'');
+      if(!v) missDays.push(dd);
+    }
+
+    // ── OT ทุกวันที่ทำ ต้องมีสาเหตุ ──
+    const otMissDays=[];
+    for(let dd=1;dd<=daysInMonth;dd++){
+      const o=otMap[dd]||'';
+      if(o){const p=otSplit(o);if(p.time&&!p.reason) otMissDays.push(dd);}
+    }
+
+    if(miss.length||missDays.length||otMissDays.length){
+      problems.push({
+        label: slot.name||slot.empId||('ช่องที่ '+slot.slot),
+        slot:  slot.slot,
+        missEmp: miss,
+        missDays: missDays,
+        otMissDays: otMissDays
+      });
+    }
+
+    employees.push({slotId:sid,branchCode:slot.branchCode,slot:slot.slot,empId:slot.empId,name:slot.name,nickname:slot.nickname,phone:slot.phone,dayOff:slot.dayOff,empType:slot.empType});
+  });
+
+  if(problems.length){
+    toast('กรอกข้อมูลไม่ครบ '+problems.length+' แถว','error');
+    showValidationModal(problems);
+    return;
+  }
+
+  // ตรวจชั่วโมงกะ (ยกเว้น OT)
+  const changes=Object.values(state.pending);
+  const bad=changes.filter(c=>{if(c.kind==='ot')return false;const h=spanHours(c.shift);return isWorking(c.shift)&&h!==null&&h<state.requiredHours;});
+  if(bad.length){toast(`มี ${bad.length} ช่องชั่วโมงไม่ครบ ${state.requiredHours} ชม. ห้ามบันทึก`,'error');return;}
+
+  if(!changes.length&&!state.empDirty){toast('ไม่มีข้อมูลที่ต้องบันทึก');return;}
+
+  const sp=document.getElementById('save-spinner');sp.classList.add('active');
+  const sbtn=document.getElementById('save-bar-btn');if(sbtn)sbtn.disabled=true;
+  google.script.run.withSuccessHandler(res=>{
+    sp.classList.remove('active');if(sbtn)sbtn.disabled=false;
+    if(res.success){
+      state.pending={};state.empDirty=false;updateSaveBar();
+      toast('✓ บันทึกสำเร็จ','success');
+      loadSchedule(); // โหลดใหม่จากเซิร์ฟเวอร์ ยืนยันข้อมูลตรงกัน
+    }else{
+      toast('บันทึกล้มเหลว: '+res.error,'error');
+      if(res.invalid) res.invalid.forEach(iv=>{const c=document.querySelector(`[data-key="${iv.slotId}-${iv.day}"]`);if(c)c.style.outline='2px solid #c62828';});
+    }
+  }).withFailureHandler(e=>{sp.classList.remove('active');if(sbtn)sbtn.disabled=false;toast('บันทึกล้มเหลว: '+e,'error');})
+  .saveAll(state.branchCode,state.year,state.month,employees,changes);
+}
+
+// ══════════ EXPORT ══════════
+let exportMode='branch';
+// admin → เปิด dialog เลือกโหมด, ผู้ใช้ทั่วไป → export เฉพาะสาขาที่โหลดอยู่
+function onExportClick(){
+  if(!state.amCode){toast('เลือก AM ก่อน','error');return;}
+  if(state.admin){
+    document.getElementById('export-dialog').classList.add('show');
+  }else{
+    if(!state.branchCode||!state.data){toast('กรุณาโหลดตารางสาขาก่อน Export','error');return;}
+    runExport('branch',state.branchCode);
+  }
+}
+function closeExportDialog(){document.getElementById('export-dialog').classList.remove('show');}
+function selectExportMode(mode,el){
+  exportMode=mode;
+  document.querySelectorAll('.export-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked=true;
+  document.getElementById('export-branch-sel').classList.toggle('show',mode==='branch');
+}
+function doExport(){
+  const br=document.getElementById('export-branch').value||state.branchCode;
+  closeExportDialog();
+  runExport(exportMode,br);
+}
+// เรียก backend แล้วดาวน์โหลดไฟล์ .xlsx ผ่าน hidden iframe
+function runExport(mode,branchCode){
+  showLoading('กำลังสร้างไฟล์ Excel...');
+  google.script.run.withSuccessHandler(res=>{
+    hideLoading();
+    if(res.success){
+      const f=document.createElement('iframe');
+      f.style.display='none';f.src=res.downloadUrl;
+      document.body.appendChild(f);
+      toast('✓ กำลังดาวน์โหลดไฟล์ Excel...','success');
+      // ดาวน์โหลดเสร็จแล้วลบไฟล์ชั่วคราวทิ้งทันที (ไม่เก็บไว้)
+      setTimeout(()=>{
+        f.remove();
+        if(res.fileId) google.script.run.deleteExportFile(res.fileId);
+      },8000);
+    }else toast('Export ล้มเหลว: '+res.error,'error');
+  }).withFailureHandler(e=>{hideLoading();toast('Export ล้มเหลว: '+e,'error');})
+  .exportToExcel(state.amCode,state.year,state.month,mode,branchCode);
+}
+
+// ══════════ TAB ══════════
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-grid').style.display=name==='grid'?'':'none';
+  document.getElementById('tab-summary').style.display=name==='summary'?'':'none';
+}
+
+// ══════════ HOLIDAYS ══════════
+function loadHolidays(){
+  const year=Number(document.getElementById('h-year').value)||new Date().getFullYear();
+  showLoading('โหลดวันหยุด...');
+  google.script.run.withSuccessHandler(h=>{hideLoading();renderHolidays(h,year);})
+    .withFailureHandler(e=>{hideLoading();toast('โหลดวันหยุดล้มเหลว: '+e,'error');}).getHolidays(year);
+}
+function renderHolidays(holidays,year){
+  const byMonth={};holidays.forEach(h=>{const m=new Date(h.date).getMonth()+1;(byMonth[m]=byMonth[m]||[]).push(h);});
+  let html='';
+  for(let m=1;m<=12;m++){
+    const items=byMonth[m]||[];
+    html+=`<div class="month-card"><div class="month-card-header">${THAI_MONTHS[m]} ${year+543}<span style="font-size:10px;opacity:.7">${items.length} วัน</span></div><div class="month-card-body">`;
+    if(!items.length) html+='<div style="color:#bbb;font-size:11px;padding:8px 0">— ไม่มีวันหยุด —</div>';
+    else items.forEach(h=>{const d=new Date(h.date);html+=`<div class="holiday-item"><span class="holiday-date">${d.getDate()} ${THAI_MONTHS[m]}</span><span class="holiday-name">${h.name}${h.isNational?' 🎌':''}</span><button class="holiday-del" onclick="deleteHoliday('${h.date}')">×</button></div>`;});
+    html+='</div></div>';
+  }
+  document.getElementById('holiday-grid-wrap').innerHTML=html;
+}
+function addHoliday(){
+  const date=document.getElementById('h-date').value,name=document.getElementById('h-name').value.trim();
+  if(!date||!name){toast('กรอกวันที่และชื่อวันหยุดก่อน','error');return;}
+  google.script.run.withSuccessHandler(res=>{
+    if(res.success){toast('✓ เพิ่มวันหยุดแล้ว','success');document.getElementById('h-date').value='';document.getElementById('h-name').value='';loadHolidays();}
+    else toast('เพิ่มล้มเหลว: '+res.error,'error');
+  }).withFailureHandler(e=>toast('เพิ่มล้มเหลว: '+e,'error'))
+  .saveHoliday({date,name,isNational:document.getElementById('h-national').checked});
+}
+function deleteHoliday(dateStr){
+  if(!confirm('ลบวันหยุดนี้?')) return;
+  google.script.run.withSuccessHandler(res=>{if(res.success){toast('✓ ลบแล้ว','success');loadHolidays();}else toast('ลบล้มเหลว: '+res.error,'error');})
+    .withFailureHandler(e=>toast('ลบล้มเหลว: '+e,'error')).deleteHoliday(dateStr);
+}
+
+// ══════════ EVENTS (วันสำคัญ) ══════════
+function loadEventsAdmin(){
+  const year=Number(document.getElementById('ev-year').value)||new Date().getFullYear();
+  showLoading('โหลดวันสำคัญ...');
+  google.script.run.withSuccessHandler(list=>{hideLoading();renderEventsAdmin(list,year);})
+    .withFailureHandler(e=>{hideLoading();toast('โหลดวันสำคัญล้มเหลว: '+e,'error');}).getEvents(year);
+}
+function renderEventsAdmin(events,year){
+  const byMonth={};events.forEach(ev=>{const m=new Date(ev.date).getMonth()+1;(byMonth[m]=byMonth[m]||[]).push(ev);});
+  let html='';
+  for(let m=1;m<=12;m++){
+    const items=byMonth[m]||[];
+    html+=`<div class="month-card"><div class="month-card-header" style="background:#e8590c">${THAI_MONTHS[m]} ${year+543}<span style="font-size:10px;opacity:.8">${items.length} รายการ</span></div><div class="month-card-body">`;
+    if(!items.length) html+='<div style="color:#bbb;font-size:11px;padding:8px 0">— ไม่มี —</div>';
+    else items.forEach(ev=>{const d=new Date(ev.date);html+=`<div class="holiday-item"><span class="holiday-date" style="color:#e65100">${d.getDate()} ${THAI_MONTHS[m]}</span><span class="holiday-name">📌 ${ev.title}${ev.detail?`<div style="font-size:9px;color:#9e9e9e">${ev.detail}</div>`:''}</span><button class="holiday-del" onclick="deleteEventRow('${ev.date}','${escAttr(ev.title)}')">×</button></div>`;});
+    html+='</div></div>';
+  }
+  document.getElementById('event-grid-wrap').innerHTML=html;
+}
+function addEvent(){
+  const date=document.getElementById('ev-date').value;
+  const title=document.getElementById('ev-title').value.trim();
+  const detail=document.getElementById('ev-detail').value.trim();
+  if(!date||!title){toast('กรอกวันที่และชื่อวันสำคัญก่อน','error');return;}
+  google.script.run.withSuccessHandler(res=>{
+    if(res.success){toast('✓ เพิ่มวันสำคัญแล้ว','success');document.getElementById('ev-date').value='';document.getElementById('ev-title').value='';document.getElementById('ev-detail').value='';loadEventsAdmin();loadUpcomingEvents();}
+    else toast('เพิ่มล้มเหลว: '+res.error,'error');
+  }).withFailureHandler(e=>toast('เพิ่มล้มเหลว: '+e,'error')).saveEvent({date,title,detail});
+}
+function deleteEventRow(dateStr,title){
+  if(!confirm('ลบวันสำคัญนี้?')) return;
+  google.script.run.withSuccessHandler(res=>{if(res.success){toast('✓ ลบแล้ว','success');loadEventsAdmin();loadUpcomingEvents();}else toast('ลบล้มเหลว: '+res.error,'error');})
+    .withFailureHandler(e=>toast('ลบล้มเหลว: '+e,'error')).deleteEvent(dateStr,title);
+}
+
+// ── แจ้งเตือนวันสำคัญใกล้ถึง ──
+function loadUpcomingEvents(){
+  google.script.run.withSuccessHandler(list=>{
+    state.upcoming=list||[];
+    const badge=document.getElementById('bell-badge');
+    if(list&&list.length){badge.textContent=list.length;badge.style.display='flex';}
+    else badge.style.display='none';
+  }).withFailureHandler(()=>{}).getUpcomingEvents(45);
+}
+function openEventsNotif(){
+  const pop=document.getElementById('notif-pop');
+  if(pop.classList.contains('show')){pop.classList.remove('show');return;}
+  const list=state.upcoming||[];
+  let html='';
+  if(!list.length) html='<div class="notif-empty">ไม่มีวันสำคัญใน 45 วันข้างหน้า</div>';
+  else list.forEach(ev=>{
+    const d=new Date(ev.date);
+    const when=ev.daysLeft===0?'วันนี้':(ev.daysLeft===1?'พรุ่งนี้':`อีก ${ev.daysLeft} วัน`);
+    const cls=ev.daysLeft===0?'nw-today':(ev.daysLeft<=7?'nw-soon':'nw-later');
+    html+=`<div class="notif-item">
+      <div class="notif-when"><span class="nw-badge ${cls}">${when}</span><div class="nw-date">${d.getDate()} ${THAI_MONTHS[d.getMonth()+1]}</div></div>
+      <div class="notif-body"><div class="nb-title">📌 ${ev.title}</div>${ev.detail?`<div class="nb-detail">${ev.detail}</div>`:''}</div></div>`;
+  });
+  document.getElementById('notif-list').innerHTML=html;
+  pop.classList.add('show');
+}
+document.addEventListener('click',function(e){
+  const pop=document.getElementById('notif-pop'),bell=document.getElementById('bell');
+  if(pop&&pop.classList.contains('show')&&!pop.contains(e.target)&&e.target!==bell&&!bell.contains(e.target)) pop.classList.remove('show');
+});
+
+// ══════════ EMPLOYEES PAGE ══════════
+function loadEmployees(){
+  const am=document.getElementById('sel-am').value;
+  google.script.run.withSuccessHandler(emps=>renderEmpTable(emps))
+    .withFailureHandler(e=>toast('โหลดพนักงานล้มเหลว: '+e,'error')).getEmployees(am||null);
+}
+function renderEmpTable(emps){
+  if(!emps.length){document.getElementById('emp-table-wrap').innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><p>ไม่พบข้อมูลพนักงาน</p></div>';return;}
+  let html='<table class="schedule emp-edit"><thead><tr>'
+    +'<th>รหัสพนักงาน</th><th style="text-align:left;min-width:180px">ชื่อ-สกุล</th><th>ชื่อเล่น</th><th>เบอร์โทร</th>'
+    +'<th>สาขา</th><th>ประเภท</th><th style="min-width:130px">วันหยุดประจำ</th><th>จัดการ</th></tr></thead><tbody>';
+  emps.forEach((e,i)=>{
+    const sid=e.slotId;
+    html+=`<tr data-empslot="${sid}">
+      <td><input class="ei" data-ef="empId" value="${escAttr(e.empId)}" style="width:90px"></td>
+      <td style="text-align:left"><input class="ei" data-ef="name" value="${escAttr(e.name)}" style="width:175px;font-weight:600"></td>
+      <td><input class="ei" data-ef="nickname" value="${escAttr(e.nickname)}" style="width:70px"></td>
+      <td><input class="ei" data-ef="phone" value="${escAttr(e.phone)}" style="width:95px;color:#1565c0"></td>
+      <td><span class="branch-chip">${e.branchCode}</span></td>
+      <td><input class="ei" data-ef="empType" value="${escAttr(e.empType)}" placeholder="พนักงาน" style="width:70px;text-align:center"></td>
+      <td><input class="ei" data-ef="dayOff" value="${escAttr(e.dayOff)}" placeholder="MON,WED" style="width:120px"></td>
+      <td style="white-space:nowrap">
+        <button class="row-btn save" title="บันทึก" onclick="saveEmpRow('${sid}','${escAttr(e.branchCode)}',${e.slot||1})">💾</button>
+        <button class="row-btn del" title="ลบ" onclick="deleteEmpRow('${sid}','${escAttr(e.name||e.empId)}')">🗑️</button>
+      </td></tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('emp-table-wrap').innerHTML=html;
+}
+
+function saveEmpRow(slotId,branchCode,slot){
+  const tr=document.querySelector(`tr[data-empslot="${slotId}"]`);if(!tr)return;
+  const g=f=>{const el=tr.querySelector(`input[data-ef="${f}"]`);return el?(el.value||'').trim():'';};
+  const emp={slotId,branchCode,slot,empId:g('empId'),name:g('name'),nickname:g('nickname'),phone:g('phone'),empType:g('empType'),dayOff:g('dayOff')};
+  if(!emp.name&&!emp.empId){toast('กรอกชื่อหรือรหัสพนักงานก่อน','error');return;}
+  tr.style.opacity='.5';
+  google.script.run.withSuccessHandler(res=>{
+    tr.style.opacity='';
+    if(res.success) toast('✓ บันทึกข้อมูลพนักงานแล้ว','success');
+    else toast('บันทึกล้มเหลว: '+res.error,'error');
+  }).withFailureHandler(e=>{tr.style.opacity='';toast('บันทึกล้มเหลว: '+e,'error');}).saveEmployeeSlot(emp);
+}
+
+function deleteEmpRow(slotId,label){
+  if(!confirm(`ลบพนักงาน "${label}" และตารางรอบทั้งหมด?`)) return;
+  google.script.run.withSuccessHandler(res=>{
+    if(res.success){toast('✓ ลบแล้ว','success');loadEmployees();}
+    else toast('ลบล้มเหลว: '+res.error,'error');
+  }).withFailureHandler(e=>toast('ลบล้มเหลว: '+e,'error')).deleteEmployeeSlot(slotId);
+}
+
+// ══════════ DASHBOARD ══════════
+function initDashboardFilters(){
+  const dbAm=document.getElementById('db-am');
+  // เติม AM list จาก dropdown หลัก
+  if(!dbAm.options.length){
+    const main=document.getElementById('sel-am');
+    [...main.options].forEach(o=>{if(o.value)dbAm.innerHTML+=`<option value="${o.value}">${o.value}</option>`;});
+  }
+  if(state.amCode) dbAm.value=state.amCode;
+  const dbMon=document.getElementById('db-month');
+  if(!dbMon.value) dbMon.value=document.getElementById('sel-month').value;
+}
+
+function loadDashboard(){
+  const am=document.getElementById('db-am').value;
+  const mon=document.getElementById('db-month').value;
+  if(!am||!mon){toast('เลือก AM และเดือนก่อน','error');return;}
+  const[y,m]=mon.split('-').map(Number);
+  showLoading('กำลังโหลดสรุป...');
+  google.script.run.withSuccessHandler(db=>{hideLoading();renderDashboard(db);})
+    .withFailureHandler(e=>{hideLoading();toast('โหลดสรุปล้มเหลว: '+e,'error');}).getDashboard(am,y,m);
+}
+
+function renderDashboard(db){
+  document.getElementById('db-stats').style.display='flex';
+  document.getElementById('db-branches').textContent=db.branchCount;
+  document.getElementById('db-staff').textContent=db.totalStaff;
+  document.getElementById('db-holidays').textContent=db.holidayCount;
+  document.getElementById('db-blanks').textContent=db.rows.reduce((a,r)=>a+r.blanks,0);
+
+  let html='<table class="schedule"><thead><tr>';
+  html+='<th class="sticky-col c-idx">สาขา</th><th class="sticky-col c-name">ชื่อสาขา</th>';
+  html+='<th>รอบ DC</th><th>รอบ FDC</th><th>พนักงาน</th><th>วันทำงานรวม</th><th>ชม.รวม</th><th>ช่องว่าง</th><th>สถานะ</th>';
+  html+='</tr></thead><tbody>';
+  const statusLabel={draft:'<span style="color:#f57f17">ร่าง</span>',pending:'<span style="color:#1565c0">รออนุมัติ</span>',approved:'<span style="color:#2e7d32">อนุมัติแล้ว</span>'};
+  db.rows.forEach(r=>{
+    const blankCls=r.blanks>0?'style="color:#c62828;font-weight:700"':'style="color:#43a047;font-weight:700"';
+    html+=`<tr>
+      <td class="sticky-col c-idx"><span class="branch-chip">${r.branchCode}</span></td>
+      <td class="sticky-col c-name">${r.branchName}</td>
+      <td style="font-size:10px;color:#7986cb">${r.dcSchedule||'—'}</td>
+      <td style="font-size:10px;color:#7986cb">${r.fdcSchedule||'—'}</td>
+      <td class="sum-col">${r.staff}</td>
+      <td class="sum-col">${r.totalWork}</td>
+      <td class="sum-col">${r.totalHours}</td>
+      <td ${blankCls}>${r.blanks}</td>
+      <td style="font-size:10px">${statusLabel[r.status]||r.status}</td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('db-table-wrap').innerHTML=html;
+}
+
+// ══════════ UTILS ══════════
+function showLoading(t){document.getElementById('loading-text').textContent=t||'กำลังโหลด...';document.getElementById('loading').classList.remove('hidden');}
+function hideLoading(){document.getElementById('loading').classList.add('hidden');}
+let toastTimer;
+function toast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='toast'+(type?' '+type:'');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add('hidden'),3200);}
+function escAttr(s){return String(s||'').replace(/\\/g,'').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+</script>
+</body>
+</html>
