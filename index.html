@@ -314,19 +314,21 @@ body.mode-desktop #mobile-app{display:none}
 .m-info .mi-name{font-size:15px;font-weight:800;margin-bottom:3px}
 .mcard{background:#fff;border-radius:12px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(26,35,126,.08);border:1px solid #e7eaf6}
 .mcard.mcard-sm{border-color:#9fa8da;background:#f7f9ff}
-.mcard-head{display:flex;align-items:center;gap:10px;padding:11px 12px}
+.mcard-head{display:flex;align-items:center;gap:10px;padding:13px 12px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:rgba(92,107,192,.12)}
+.mcard-head:active{background:#f5f6ff}
 .mcard-no{width:30px;height:30px;border-radius:50%;background:#e8eaf6;color:#3949ab;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .mcard-sm .mcard-no{background:#3949ab;color:#fff}
 .mcard-title{flex:1;min-width:0}
-.mcard-title .m-name{width:100%;border:1px solid transparent;background:transparent;font-size:15px;font-weight:700;color:#1a1a2e;padding:4px 2px;border-radius:6px}
-.mcard-title .m-name:focus{border-color:#5c6bc0;background:#f8f9ff;outline:none}
-.mcard-sub{font-size:10px;color:#9e9e9e;margin-top:2px;padding-left:2px}
+.mcard-title .m-name-display{font-size:15px;font-weight:700;color:#1a1a2e;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mcard-title .m-name-display.empty{color:#9fa8da;font-weight:600;font-style:italic}
+.mcard-sub{font-size:10px;color:#9e9e9e;margin-top:3px}
 .mcard-chevron{font-size:16px;color:#9fa8da;transition:transform .2s;flex-shrink:0;padding:0 4px}
 .mcard.open .mcard-chevron{transform:rotate(180deg)}
 .mcard-body{border-top:1px solid #eef0fa;padding:12px;display:none}
 .mcard.open .mcard-body{display:block}
 .m-empfields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
 .m-empfields .mf{display:flex;flex-direction:column;gap:3px}
+.m-empfields .mf-full{grid-column:1/-1}
 .m-empfields label{font-size:10px;color:#7986cb;font-weight:700}
 .m-empfields input{padding:9px;border:1.5px solid #dde0ee;border-radius:8px;font-size:14px;background:#f8f9ff;width:100%;color:#1a1a2e}
 .mday{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4fa}
@@ -1075,6 +1077,13 @@ function updateRowEditability(slot){
   if(mDel) mDel.style.display=hasName?'block':'none';
   const mCard=document.querySelector(`.mcard[data-mcard="${slotId}"]`);
   if(mCard) mCard.classList.toggle('mcard-empty',!hasName);
+  // อัปเดตชื่อที่หัวการ์ด (มือถือ) ให้ตรงกับช่องในตัวการ์ด
+  const mName=document.getElementById('mname-'+slotId);
+  if(mName){
+    const disp=slot.name||slot.empId||'';
+    mName.textContent=disp||'+ แตะเพื่อเพิ่มพนักงาน';
+    mName.classList.toggle('empty',!disp);
+  }
 
   // แถบสีของแถวว่าง
   const tr=document.querySelector(`tr[data-slot="${slotId}"]:not([data-ot-row])`);
@@ -1834,17 +1843,19 @@ function renderMobileSchedule(){
     const isSM=(slot.empType||'').toUpperCase()==='SM';
     const hasName=!!(slot.name||slot.empId);
 
+    const displayName=slot.name||slot.empId||'';
     html+=`<div class="mcard ${isSM?'mcard-sm':''} ${hasName?'':'mcard-empty'}" data-mcard="${sid}">
       <div class="mcard-head" onclick="toggleMCard('${sid}')">
         <div class="mcard-no">${isSM?'SM':slot.slot}</div>
         <div class="mcard-title">
-          <input class="m-name" data-field="name" data-slot="${sid}" value="${escAttr(slot.name)}" placeholder="+ พิมพ์ชื่อ-สกุล" oninput="onSlotInput('${sid}')" onclick="event.stopPropagation()">
-          <div class="mcard-sub" id="msub-${sid}">${hasName?`ทำงาน ${sum.totalWork||0} วัน · ${sum.totalHours||0} ชม. · OT ${sum.totalOT||0}`:'ยังว่าง — แตะเพื่อกรอกพนักงาน'}</div>
+          <div class="m-name-display ${displayName?'':'empty'}" id="mname-${sid}">${displayName?escAttr(displayName):'+ แตะเพื่อเพิ่มพนักงาน'}</div>
+          <div class="mcard-sub" id="msub-${sid}">${hasName?`ทำงาน ${sum.totalWork||0} วัน · ${sum.totalHours||0} ชม. · OT ${sum.totalOT||0}`:'ยังว่าง — แตะเพื่อกรอกข้อมูลและตารางรอบ'}</div>
         </div>
         <span class="mcard-chevron">▾</span>
       </div>
       <div class="mcard-body">
         <div class="m-empfields">
+          <div class="mf mf-full"><label>ชื่อ-สกุล</label><input data-field="name" data-slot="${sid}" value="${escAttr(slot.name)}" oninput="onSlotInput('${sid}')" placeholder="พิมพ์ชื่อ-สกุล"></div>
           <div class="mf"><label>รหัสพนักงาน</label><input data-field="empId" data-slot="${sid}" value="${escAttr(slot.empId)}" oninput="onSlotInput('${sid}')" placeholder="รหัส"></div>
           <div class="mf"><label>ชื่อเล่น</label><input data-field="nickname" data-slot="${sid}" value="${escAttr(slot.nickname)}" oninput="onSlotInput('${sid}')" placeholder="ชื่อเล่น"></div>
           <div class="mf"><label>เบอร์โทร</label><input data-field="phone" data-slot="${sid}" value="${escAttr(slot.phone)}" oninput="onSlotInput('${sid}')" placeholder="📞 เบอร์โทร"></div>
